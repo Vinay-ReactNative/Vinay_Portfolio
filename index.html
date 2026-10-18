@@ -1,0 +1,730 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VITH — Vinay Is The Hero</title>
+    <meta
+      name="description"
+      content="Portfolio of Vinay — powered by VITH AI, an EDITH-inspired holographic assistant."
+    />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⬡</text></svg>"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- ── Animated Background ───────────────────────────────── -->
+    <div id="bg-grid"></div>
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+    <canvas id="particle-canvas"></canvas>
+
+    <!-- ── HUD Corners ───────────────────────────────────────── -->
+    <div class="hud-corner hud-tl"></div>
+    <div class="hud-corner hud-tr"></div>
+    <div class="hud-corner hud-bl"></div>
+    <div class="hud-corner hud-br"></div>
+
+    <!-- ── VITH Intro Overlay ────────────────────────────────── -->
+    <div id="vith-intro">
+      <div class="intro-logo">VITH</div>
+      <div class="intro-sub">Vinay Is The Hero · AI Portfolio System</div>
+
+      <button
+        class="intro-start-btn"
+        id="intro-start-btn"
+        title="Click to activate VITH holographic audio & interface"
+      >
+        <span class="start-btn-glow"></span>
+        <span class="start-btn-icon">⚡</span>
+        <span class="start-btn-label">INITIALIZE VITH SYSTEM</span>
+        <span class="start-btn-sub"
+          >CLICK TO ACTIVATE HOLOGRAPHIC AI &amp; VOICE</span
+        >
+      </button>
+
+      <div class="audio-visualizer" id="intro-visualizer">
+        <div class="viz-bar" style="height: 12px"></div>
+        <div class="viz-bar" style="height: 18px"></div>
+        <div class="viz-bar" style="height: 8px"></div>
+        <div class="viz-bar" style="height: 22px"></div>
+        <div class="viz-bar" style="height: 14px"></div>
+        <div class="viz-bar" style="height: 20px"></div>
+        <div class="viz-bar" style="height: 10px"></div>
+        <div class="viz-bar" style="height: 16px"></div>
+        <div class="viz-bar" style="height: 24px"></div>
+        <div class="viz-bar" style="height: 12px"></div>
+        <div class="viz-bar" style="height: 18px"></div>
+        <div class="viz-bar" style="height: 8px"></div>
+      </div>
+      <div class="intro-message" id="intro-message">
+        <span class="intro-typing-cursor"></span>
+      </div>
+      <div class="intro-progress">
+        <div class="intro-progress-bar" id="intro-progress-bar"></div>
+      </div>
+      <button class="intro-skip" id="intro-skip">[ SKIP INTRO ]</button>
+    </div>
+
+    <!-- ── NAVIGATION ────────────────────────────────────────── -->
+    <nav id="navbar">
+      <div class="nav-logo">V I T H</div>
+      <ul class="nav-links">
+        <li><a href="#hero">Home</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#skills">Skills</a></li>
+        <li><a href="#experience">Experience</a></li>
+        <li><a href="#projects">Projects</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+      <div class="nav-status">
+        <div class="status-dot"></div>
+        VITH ONLINE
+      </div>
+    </nav>
+
+    <!-- ── PAGE WRAPPER ──────────────────────────────────────── -->
+    <div class="page-wrapper">
+      <!-- ═══════════════════ HERO SECTION ═══════════════════ -->
+      <section id="hero">
+        <div class="hero-content">
+          <div class="hero-badge">
+            <div class="hero-badge-dot"></div>
+            VITH AI · PORTFOLIO SYSTEM v2.0
+          </div>
+
+          <h1 class="hero-name">
+            Hello,<br />I'm
+            <span id="hero-name-text">Vinay</span>
+          </h1>
+
+          <div class="hero-title" id="hero-title-text">
+            Full Stack Developer &amp; Tech Innovator
+          </div>
+
+          <p class="hero-bio" id="hero-bio-text">
+            Inspired by Tony Stark's vision — I build technology that matters.
+            Welcome to my holographic portfolio, powered by VITH, my personal AI
+            assistant.
+          </p>
+
+          <div class="hero-actions">
+            <a href="#projects" class="btn-holo btn-holo-solid"
+              >▶ View Projects</a
+            >
+            <a href="#contact" class="btn-holo">✉ Get In Touch</a>
+            <a href="#" id="download-cv" class="btn-holo" download
+              >↓ Download CV</a
+            >
+          </div>
+
+          <!-- Mini stats row -->
+          <div
+            style="display: flex; gap: 2rem; margin-top: 1rem; flex-wrap: wrap"
+          >
+            <div>
+              <div
+                class="mono text-cyan"
+                style="font-size: 1.4rem; font-weight: 700"
+              >
+                2+
+              </div>
+              <div
+                class="mono"
+                style="
+                  font-size: 0.6rem;
+                  color: var(--text-muted);
+                  letter-spacing: 2px;
+                "
+              >
+                YEARS EXP
+              </div>
+            </div>
+            <div>
+              <div
+                class="mono text-cyan"
+                style="font-size: 1.4rem; font-weight: 700"
+              >
+                8+
+              </div>
+              <div
+                class="mono"
+                style="
+                  font-size: 0.6rem;
+                  color: var(--text-muted);
+                  letter-spacing: 2px;
+                "
+              >
+                PROJECTS
+              </div>
+            </div>
+            <div>
+              <div
+                class="mono text-cyan"
+                style="font-size: 1.4rem; font-weight: 700"
+              >
+                2
+              </div>
+              <div
+                class="mono"
+                style="
+                  font-size: 0.6rem;
+                  color: var(--text-muted);
+                  letter-spacing: 2px;
+                "
+              >
+                COMPANIES
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- VITH Holographic Avatar -->
+        <div class="vith-holo-container">
+          <div class="vith-beam vith-beam-h"></div>
+          <div class="vith-beam vith-beam-v"></div>
+          <div class="vith-outer-ring"></div>
+          <div class="vith-mid-ring"></div>
+          <div class="vith-inner-ring"></div>
+          <div class="vith-core" id="vith-core">
+            <div class="vith-core-text">VITH</div>
+            <div class="vith-core-sub">VINAY IS<br />THE HERO</div>
+          </div>
+
+          <!-- Data readouts -->
+          <div class="vith-data-readout vith-data-readout-tl">
+            SYS_STATUS: ONLINE<br />
+            AI_CORE: ACTIVE<br />
+            VOICE: READY<br />
+            UPTIME: 100%
+          </div>
+          <div class="vith-data-readout vith-data-readout-br">
+            INSPIRED BY: EDITH<br />
+            CREATOR: VINAY<br />
+            BUILD: v2.0<br />
+            MODE: HOLOGRAPHIC
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════════════════ ABOUT SECTION ══════════════════ -->
+      <section id="about">
+        <div class="section-header fade-in">
+          <div class="section-eyebrow">01 · IDENTITY FILE</div>
+          <h2 class="section-title">About Vinay</h2>
+        </div>
+
+        <div class="about-grid">
+          <div class="fade-in">
+            <p
+              style="
+                font-size: 1.05rem;
+                line-height: 1.8;
+                color: var(--text-dim);
+                margin-bottom: 1.5rem;
+              "
+              id="about-bio-text"
+            >
+              <!-- Populated from knowledge base -->
+            </p>
+            <p
+              style="font-size: 1rem; line-height: 1.8; color: var(--text-dim)"
+              id="about-inspiration-text"
+            >
+              <!-- Populated from knowledge base -->
+            </p>
+
+            <div
+              style="
+                margin-top: 2rem;
+                display: flex;
+                gap: 1rem;
+                flex-wrap: wrap;
+              "
+            >
+              <div
+                class="holo-card"
+                style="
+                  padding: 1rem 1.5rem;
+                  display: inline-flex;
+                  align-items: center;
+                  gap: 10px;
+                "
+              >
+                <span
+                  style="
+                    font-size: 0.7rem;
+                    color: var(--text-muted);
+                    font-family: var(--font-mono);
+                    letter-spacing: 1px;
+                  "
+                  >LOCATION</span
+                >
+                <span class="text-cyan" id="about-location">India</span>
+              </div>
+              <div
+                class="holo-card"
+                style="
+                  padding: 1rem 1.5rem;
+                  display: inline-flex;
+                  align-items: center;
+                  gap: 10px;
+                "
+              >
+                <span
+                  style="
+                    font-size: 0.7rem;
+                    color: var(--text-muted);
+                    font-family: var(--font-mono);
+                    letter-spacing: 1px;
+                  "
+                  >ROLE</span
+                >
+                <span class="text-cyan" id="about-title-mini">Developer</span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="about-stat-grid">
+              <div class="holo-card stat-card fade-in">
+                <span class="stat-num">2+</span>
+                <span class="stat-label">YEARS OF<br />EXPERIENCE</span>
+              </div>
+              <div class="holo-card stat-card fade-in">
+                <span class="stat-num">8+</span>
+                <span class="stat-label">PROJECTS<br />DELIVERED</span>
+              </div>
+              <div class="holo-card stat-card fade-in">
+                <span class="stat-num">2</span>
+                <span class="stat-label">COMPANIES<br />WORKED AT</span>
+              </div>
+              <div class="holo-card stat-card fade-in">
+                <span class="stat-num">∞</span>
+                <span class="stat-label">CURIOSITY &<br />CREATIVITY</span>
+              </div>
+            </div>
+
+            <!-- Hobbies -->
+            <div
+              class="holo-card fade-in"
+              style="margin-top: 1rem; padding: 1.5rem"
+            >
+              <div
+                class="mono"
+                style="
+                  font-size: 0.6rem;
+                  letter-spacing: 3px;
+                  color: var(--holo-gold);
+                  margin-bottom: 0.75rem;
+                "
+              >
+                // INTERESTS & HOBBIES
+              </div>
+              <div
+                style="display: flex; flex-wrap: wrap; gap: 6px"
+                id="hobbies-container"
+              >
+                <!-- Populated from knowledge base -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════════════════ SKILLS SECTION ═════════════════ -->
+      <section id="skills">
+        <div class="section-header fade-in">
+          <div class="section-eyebrow">02 · CAPABILITY MATRIX</div>
+          <h2 class="section-title">Skills & Tech Stack</h2>
+        </div>
+
+        <div class="skills-grid" id="skills-grid">
+          <!-- Populated by app.js -->
+        </div>
+
+        <!-- Soft skills -->
+        <div
+          class="holo-card fade-in"
+          style="margin-top: 2rem; padding: 1.5rem"
+        >
+          <div
+            class="mono"
+            style="
+              font-size: 0.6rem;
+              letter-spacing: 3px;
+              color: var(--holo-gold);
+              margin-bottom: 1rem;
+            "
+          >
+            // SOFT SKILLS
+          </div>
+          <div
+            style="display: flex; flex-wrap: wrap; gap: 8px"
+            id="soft-skills-container"
+          >
+            <!-- Populated from knowledge base -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════════════════ EXPERIENCE SECTION ═════════════ -->
+      <section id="experience">
+        <div class="section-header fade-in">
+          <div class="section-eyebrow">03 · MISSION LOG</div>
+          <h2 class="section-title">Work Experience</h2>
+        </div>
+        <div class="timeline" id="experience-timeline">
+          <!-- Populated by app.js -->
+        </div>
+
+        <!-- Education -->
+        <div style="margin-top: 3rem">
+          <div class="section-eyebrow fade-in" style="margin-bottom: 1.5rem">
+            // EDUCATION
+          </div>
+          <div id="education-container">
+            <!-- Populated from knowledge base -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════════════════ PROJECTS SECTION ═══════════════ -->
+      <section id="projects">
+        <div class="section-header fade-in">
+          <div class="section-eyebrow">04 · STARK TECH VAULT</div>
+          <h2 class="section-title">Projects</h2>
+        </div>
+        <div class="projects-grid" id="projects-grid">
+          <!-- Populated by app.js -->
+        </div>
+      </section>
+
+      <!-- ═══════════════════ CONTACT SECTION ════════════════ -->
+      <section id="contact">
+        <div class="section-header fade-in">
+          <div class="section-eyebrow">05 · OPEN CHANNEL</div>
+          <h2 class="section-title">Get In Touch</h2>
+          <p
+            style="
+              color: var(--text-dim);
+              font-size: 1rem;
+              margin-top: 1rem;
+              max-width: 500px;
+              margin-left: auto;
+              margin-right: auto;
+            "
+          >
+            Ready to collaborate? Or just want to say hello? VITH will pass the
+            message along.
+          </p>
+        </div>
+        <div class="contact-grid" id="contact-grid">
+          <!-- Populated by app.js -->
+        </div>
+      </section>
+    </div>
+
+    <!-- ── Footer ─────────────────────────────────────────────── -->
+    <footer>
+      <p>
+        VITH · VINAY IS THE HERO · Inspired by EDITH &amp; Tony Stark · Built
+        with ♥ and a lot of caffeine
+      </p>
+      <p style="margin-top: 4px; opacity: 0.5">
+        © 2025 Vinay · All rights reserved
+      </p>
+    </footer>
+
+    <!-- ══════════════════════════════════════════════════════════
+     VITH CAPSULE — Slim bottom bar (mic + input + send)
+═══════════════════════════════════════════════════════════ -->
+
+    <!-- Floating message strip above capsule -->
+    <div id="vith-messages"></div>
+
+    <!-- The capsule bar -->
+    <div id="vith-capsule">
+      <!-- VITH label + status dot -->
+      <div class="capsule-brand">
+        <div class="capsule-dot" id="vith-indicator"></div>
+        <span class="capsule-label">VITH</span>
+      </div>
+
+      <!-- Audio waveform visualizer -->
+      <div class="capsule-viz" id="capsule-viz">
+        <div class="viz-bar"></div>
+        <div class="viz-bar"></div>
+        <div class="viz-bar"></div>
+        <div class="viz-bar"></div>
+        <div class="viz-bar"></div>
+        <div class="viz-bar"></div>
+        <div class="viz-bar"></div>
+      </div>
+
+      <!-- Text input -->
+      <input
+        type="text"
+        id="vith-text-input"
+        class="capsule-input"
+        placeholder="Ask Vith anything about Vinay..."
+        autocomplete="off"
+      />
+
+      <!-- Mic button -->
+      <button class="capsule-btn" id="vith-mic" title="Speak to Vith">
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+          <line x1="12" y1="19" x2="12" y2="23" />
+          <line x1="8" y1="23" x2="16" y2="23" />
+        </svg>
+      </button>
+
+      <!-- Send button -->
+      <button class="capsule-btn capsule-send" id="vith-send" title="Send">
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <line x1="22" y1="2" x2="11" y2="13" />
+          <polygon points="22 2 15 22 11 13 2 9 22 2" />
+        </svg>
+      </button>
+
+      <!-- History button -->
+      <button
+        class="capsule-btn capsule-history"
+        id="vith-history-btn"
+        title="View Conversation History"
+        aria-label="Conversation History"
+      >
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+          <path d="M3 3v5h5" />
+          <polyline points="12 7 12 12 15 15" />
+        </svg>
+        <span class="capsule-history-badge hidden" id="vith-history-badge">0</span>
+      </button>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════
+     HOLOGRAPHIC PROJECT MODAL (Glassmorphism & Stark HUD)
+═══════════════════════════════════════════════════════════ -->
+    <div
+      id="project-modal-backdrop"
+      class="modal-backdrop hidden"
+      aria-hidden="true"
+    >
+      <div
+        class="modal-dialog holo-card"
+        id="project-modal-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-project-title"
+      >
+        <!-- HUD Accent Corners -->
+        <div class="modal-corner modal-tl"></div>
+        <div class="modal-corner modal-tr"></div>
+        <div class="modal-corner modal-bl"></div>
+        <div class="modal-corner modal-br"></div>
+        <div class="modal-scanline"></div>
+
+        <!-- Modal Header -->
+        <div class="modal-header">
+          <div class="modal-hud-meta">
+            <span class="modal-hud-tag" id="modal-hud-tag"
+              >// STARK_TECH_VAULT // INTEL_DOSSIER</span
+            >
+            <span class="modal-status-badge" id="modal-status-badge"
+              >ACTIVE</span
+            >
+          </div>
+          <button
+            class="modal-close-btn"
+            id="modal-close-btn"
+            aria-label="Close intel modal"
+          >
+            ✕
+          </button>
+        </div>
+
+        <!-- Modal Scrollable Content -->
+        <div class="modal-body" id="modal-body">
+          <!-- Populated dynamically by app.js -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════
+     VITH CONVERSATION HISTORY MODAL (Stark HUD Intel Log)
+═══════════════════════════════════════════════════════════ -->
+    <div
+      id="history-modal-backdrop"
+      class="modal-backdrop hidden"
+      aria-hidden="true"
+    >
+      <div
+        class="modal-dialog holo-card"
+        id="history-modal-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="history-modal-title"
+      >
+        <!-- HUD Accent Corners -->
+        <div class="modal-corner modal-tl"></div>
+        <div class="modal-corner modal-tr"></div>
+        <div class="modal-corner modal-bl"></div>
+        <div class="modal-corner modal-br"></div>
+        <div class="modal-scanline"></div>
+
+        <!-- Modal Header -->
+        <div class="modal-header">
+          <div class="modal-hud-meta">
+            <span class="modal-hud-tag" id="history-modal-title"
+              >// VITH_SYSTEM // CONVERSATION_INTEL_LOG</span
+            >
+            <span class="modal-status-badge" id="history-count-badge"
+              >0 QUERIES</span
+            >
+          </div>
+          <div class="modal-header-actions">
+            <button
+              class="history-clear-btn"
+              id="history-clear-btn"
+              title="Clear conversation log"
+            >
+              <span class="clear-icon">⟲</span> CLEAR LOG
+            </button>
+            <button
+              class="modal-close-btn"
+              id="history-close-btn"
+              aria-label="Close conversation history"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+
+        <!-- Modal Scrollable Content -->
+        <div class="modal-body history-modal-body" id="history-modal-body">
+          <!-- Populated dynamically by app.js -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Scripts ────────────────────────────────────────────── -->
+    <script src="knowledge-base.js"></script>
+    <script src="voice-engine.js"></script>
+    <script src="app.js"></script>
+
+    <!-- Populate dynamic content from knowledge base -->
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const kb = VITH_KNOWLEDGE;
+
+        // Hero
+        document.getElementById("hero-name-text").textContent = kb.owner.name;
+        document.getElementById("hero-title-text").textContent = kb.owner.title;
+        document.getElementById("hero-bio-text").textContent =
+          "Inspired by Tony Stark's vision — I build technology that matters. " +
+          "Welcome to my holographic portfolio, powered by VITH, my personal AI assistant.";
+
+        // About
+        document.getElementById("about-bio-text").textContent = kb.owner.bio;
+        document.getElementById("about-inspiration-text").textContent =
+          kb.owner.inspiration;
+        document.getElementById("about-location").textContent =
+          kb.owner.location;
+        document.getElementById("about-title-mini").textContent = kb.owner.title
+          .split("&")[0]
+          .trim();
+
+        // Hobbies
+        const hobbiesEl = document.getElementById("hobbies-container");
+        kb.hobbies.forEach((h) => {
+          const span = document.createElement("span");
+          span.className = "tech-tag";
+          span.textContent = h;
+          hobbiesEl.appendChild(span);
+        });
+
+        // Soft skills
+        const softEl = document.getElementById("soft-skills-container");
+        kb.skills.soft.forEach((s) => {
+          const span = document.createElement("span");
+          span.className = "tech-tag";
+          span.style.borderColor = "rgba(255,170,0,0.3)";
+          span.style.color = "var(--holo-gold)";
+          span.textContent = s;
+          softEl.appendChild(span);
+        });
+
+        // Education
+        const eduEl = document.getElementById("education-container");
+        kb.education.forEach((e) => {
+          eduEl.innerHTML += `
+        <div class="holo-card" style="margin-bottom:1rem">
+          <div class="mono" style="font-size:0.65rem;color:var(--holo-gold);letter-spacing:2px;margin-bottom:4px">${e.period}</div>
+          <div style="font-family:var(--font-hud);font-size:1rem;color:var(--text-primary);font-weight:700">${e.degree}</div>
+          <div style="color:var(--text-dim);font-size:0.9rem;margin-top:4px">${e.institution}</div>
+          ${e.grade ? `<div class="mono" style="font-size:0.65rem;color:var(--holo-cyan);margin-top:6px">${e.grade}</div>` : ""}
+        </div>`;
+        });
+
+        // Certifications
+        const certEl = document.getElementById("cert-container");
+        if (certEl) {
+          kb.certifications.forEach((c) => {
+            certEl.innerHTML += `
+        <div style="display:flex;align-items:start;gap:8px;margin-bottom:10px">
+          <span style="color:var(--holo-cyan);margin-top:2px">▸</span>
+          <div>
+            <div style="font-size:0.85rem;color:var(--text-primary)">${c.name}</div>
+            <div class="mono" style="font-size:0.6rem;color:var(--text-muted)">${c.issuer} · ${c.year}</div>
+          </div>
+        </div>`;
+          });
+        }
+
+        // Achievements
+        const achEl = document.getElementById("achievement-container");
+        if (achEl) {
+          kb.achievements.forEach((a) => {
+            achEl.innerHTML += `
+        <div style="display:flex;align-items:start;gap:8px;margin-bottom:10px">
+          <span style="color:var(--holo-gold);margin-top:2px">★</span>
+          <div style="font-size:0.85rem;color:var(--text-primary)">${a}</div>
+        </div>`;
+          });
+        }
+      });
+    </script>
+  </body>
+</html>
