@@ -1,26 +1,23 @@
 /**
  * VITH Voice Engine
- * Handles Text-to-Speech (ElevenLabs + Web Speech API fallback)
+ * Handles Text-to-Speech (Fish Audio "Sarah" + Web Speech API fallback)
  * and Speech-to-Text (Web Speech API)
  */
 
 const VITHVoice = {
   // ─── CONFIG ──────────────────────────────────────────────────────────────
   config: {
-    elevenlabs: {
-      apiKey: "sk_4a271fb44562d9fe8ac0333115298027695cb590df5c1fe1",
-      // Alice ("Xb7hH8MSUJpSbSDYk0k2") — young, friendly, confident female AI assistant
-      // Lily ("pFZP5JQG7iQjIQuC4Bku") — warm, bright, natural female
-      // Jessica ("cgSgspJ2msm6clMCkdW9") — conversational, expressive female
-      voiceId: "Xb7hH8MSUJpSbSDYk0k2",
-      modelId: "eleven_turbo_v2_5",
-      stability: 0.40,
-      similarityBoost: 0.85,
-      style: 0.65,
-      speakerBoost: true
+    fishAudio: {
+      apiKey: "sk-fish-Ob7JINBI5EPoxos6h-rVa1gKjoHy9uReHh58Ku47ODk",
+      voiceName: "Sarah",
+      voiceId: "933563129e564b19a115bedd57b7406a", // Sarah voice model ID on fish.audio
+      model: "s2.1-pro",
+      format: "mp3",
+      endpoint: "https://api.fish.audio/v1/tts",
+      proxyEndpoint: "/api/tts"
     },
     tts: {
-      useFallback: true, // Keep browser speech enabled until a secure API proxy is configured
+      useFallback: false, // Tries Fish Audio first; seamlessly falls back if credit exhausted or offline
       rate: 1.05,         // Slightly faster = more energetic/youthful
       pitch: 1.15,        // Higher pitch = female, friendly tone
       volume: 1.0,
@@ -56,9 +53,11 @@ const VITHVoice = {
   async init() {
     this._initSTT();
     this._initWebSpeech();
-    if (!this.config.elevenlabs.apiKey) {
-      console.warn("[VITH] ElevenLabs API key not set. Using Web Speech API.");
+    if (!this.config.fishAudio.apiKey) {
+      console.log("[VITH] Fish Audio API key not set. Using Web Speech API.");
       this.config.tts.useFallback = true;
+    } else {
+      console.log("[VITH] Fish Audio initialized with voice Sarah (reference_id: " + this.config.fishAudio.voiceId + ")");
     }
     return this;
   },
@@ -229,42 +228,59 @@ const VITHVoice = {
     if (this.onSpeakStart) this.onSpeakStart();
     this.isSpeaking = true;
 
-    if (this.config.elevenlabs.apiKey && !this.config.tts.useFallback) {
-      await this._speakElevenLabs(processed);
+    if (this.config.fishAudio.apiKey && !this.config.tts.useFallback) {
+      await this._speakFishAudio(processed);
     } else {
       this._speakWebSpeech(processed);
     }
   },
 
-  async _speakElevenLabs(text) {
-    const { apiKey, voiceId, modelId, stability, similarityBoost, style, speakerBoost } =
-      this.config.elevenlabs;
+  async _speakFishAudio(text) {
+    const { apiKey, voiceId, model, format, endpoint, proxyEndpoint } = this.config.fishAudio;
+    const payload = {
+      text,
+      reference_id: voiceId,
+      format: format || "mp3"
+    };
 
     try {
-      const response = await fetch(
-        `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream`,
-        {
+      let response;
+      // 1. Try local proxy if running
+      try {
+        const proxyRes = await fetch(proxyEndpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        if (proxyRes.ok || proxyRes.status !== 404) {
+          response = proxyRes;
+        }
+      } catch (proxyErr) {
+        // No local proxy, continue to direct endpoint
+      }
+
+      // 2. Direct API request
+      if (!response) {
+        response = await fetch(endpoint, {
           method: "POST",
           headers: {
-            "xi-api-key": apiKey,
+            "Authorization": `Bearer ${apiKey}`,
             "Content-Type": "application/json",
-            Accept: "audio/mpeg"
+            "model": model || "s2.1-pro"
           },
-          body: JSON.stringify({
-            text,
-            model_id: modelId,
-            voice_settings: {
-              stability,
-              similarity_boost: similarityBoost,
-              style,
-              use_speaker_boost: speakerBoost
-            }
-          })
-        }
-      );
+          body: JSON.stringify(payload)
+        });
+      }
 
       if (!response.ok) {
-        throw new Error(`ElevenLabs API error: ${response.status}`);
+        if (response.status === 402) {
+          console.warn(
+            "[VITH Fish Audio] Insufficient API credit (HTTP 402). Top up API credits at https://fish.audio/app/developers. Seamlessly using natural Web Speech engine."
+          );
+        } else {
+          console.warn(`[VITH Fish Audio] API returned HTTP ${response.status}: ${response.statusText}. Using Web Speech fallback.`);
+        }
+        throw new Error(`Fish Audio API error: ${response.status}`);
       }
 
       const blob = await response.blob();
@@ -274,13 +290,20 @@ const VITHVoice = {
 
       // Wire up visualizer
       if (this.visualizerCallback) {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const source = ctx.createMediaElementSource(audio);
-        const analyser = ctx.createAnalyser();
-        analyser.fftSize = 256;
-        source.connect(analyser);
-        analyser.connect(ctx.destination);
-        this._driveVisualizer(analyser);
+        try {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) {
+            const ctx = new AudioContext();
+            const source = ctx.createMediaElementSource(audio);
+            const analyser = ctx.createAnalyser();
+            analyser.fftSize = 256;
+            source.connect(analyser);
+            analyser.connect(ctx.destination);
+            this._driveVisualizer(analyser);
+          }
+        } catch (visErr) {
+          console.warn("[VITH Audio Visualizer]", visErr);
+        }
       }
 
       audio.onended = () => {
@@ -289,16 +312,16 @@ const VITHVoice = {
         if (this.onSpeakEnd) this.onSpeakEnd();
       };
 
-      audio.onerror = () => {
+      audio.onerror = (err) => {
+        console.warn("[VITH Fish Audio] Audio element playback error, falling back to Web Speech:", err);
         this.isSpeaking = false;
-        this.config.tts.useFallback = true;
+        URL.revokeObjectURL(url);
         this._speakWebSpeech(text);
       };
 
       await audio.play();
     } catch (err) {
-      console.error("[VITH ElevenLabs]", err);
-      this.config.tts.useFallback = true;
+      console.warn("[VITH Fish Audio] Falling back to Web Speech synthesis:", err.message);
       this._speakWebSpeech(text);
     }
   },
@@ -429,12 +452,26 @@ const VITHVoice = {
   stopSpeaking() {
     clearInterval(this._resumeInterval);
     this._activeUtterance = null;
+    const wasSpeaking = this.isSpeaking;
+
     if (this.currentAudio) {
-      this.currentAudio.pause();
+      try {
+        this.currentAudio.pause();
+        this.currentAudio.currentTime = 0;
+      } catch (e) {}
       this.currentAudio = null;
     }
-    if (window.speechSynthesis) window.speechSynthesis.cancel();
+
+    if (window.speechSynthesis) {
+      try {
+        window.speechSynthesis.cancel();
+      } catch (e) {}
+    }
+
     this.isSpeaking = false;
+    if (wasSpeaking && this.onSpeakEnd) {
+      this.onSpeakEnd();
+    }
   },
 
   // ─── STT: LISTEN ─────────────────────────────────────────────────────────

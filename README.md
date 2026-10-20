@@ -38,7 +38,8 @@
 ### 3. 🎙️ Voice & Audio Pipeline
 * **Real-time Speech Recognition (STT)**: Uses Web Speech API with live transcript streaming into the assistant input.
 * **Automatic 1.8s Silence Auto-Submit**: Intelligent pause detection automatically submits speech after 1.8 seconds of silence without requiring manual button clicks.
-* **Text-to-Speech (TTS)**: Voice responses powered by Web Speech Synthesis with natural utterance scheduling and ElevenLabs architecture compatibility.
+* **Text-to-Speech (TTS) — Fish Audio "Sarah"**: High-fidelity neural voice generation powered by Fish Audio (`s2.1-pro` / `s2-pro` with Sarah model `933563129e564b19a115bedd57b7406a`), paired with natural Web Speech synthesis fallback.
+* **Instant Speech Interruption / Stop Option**: Dedicated holographic Stop button (`⏹`), `Esc` hotkey, and avatar core tap to immediately interrupt or cancel VITH's speech mid-sentence.
 * **Audio Feedback Loop Prevention**: Automatically pauses microphone recognition while VITH is speaking to prevent self-hearing.
 
 ### 4. 🗂️ Conversation Intel History Panel

@@ -1,4 +1,10 @@
 {
+  "name": "vith-portfolio",
+  "version": "2.0.0",
+  "description": "Vinay Is The Hero — Holographic AI Portfolio with VITH",
+  "scripts": {
+    "start": "node server.js"
+  },
   "dependencies": {
     "html2canvas": "^1.4.1"
   }

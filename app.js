@@ -817,6 +817,7 @@ function initVITHPanel() {
   const textInput = document.getElementById("vith-text-input");
   const sendBtn   = document.getElementById("vith-send");
   const micBtn    = document.getElementById("vith-mic");
+  const stopBtn   = document.getElementById("vith-stop-btn");
   const historyBtn = document.getElementById("vith-history-btn");
   const historyBadge = document.getElementById("vith-history-badge");
   const dot       = document.getElementById("vith-indicator");
@@ -989,10 +990,35 @@ function initVITHPanel() {
   }
 
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && isHistoryModalOpen()) {
-      closeHistoryModal();
+    if (e.key === "Escape") {
+      if (VITHVoice.isSpeaking) {
+        console.log("[VITH] Escape pressed: stopping speech immediately.");
+        VITHVoice.stopSpeaking();
+        return;
+      }
+      if (isHistoryModalOpen()) {
+        closeHistoryModal();
+      }
     }
   });
+
+  // Clicking avatar core while speaking acts as an emergency stop
+  if (vithCore) {
+    vithCore.addEventListener("click", () => {
+      if (VITHVoice.isSpeaking) {
+        console.log("[VITH] Avatar core clicked during speech: stopping playback.");
+        VITHVoice.stopSpeaking();
+      }
+    });
+  }
+
+  // Dedicated Stop button in capsule bar
+  if (stopBtn) {
+    stopBtn.addEventListener("click", () => {
+      console.log("[VITH] Stop button clicked: stopping active speech.");
+      VITHVoice.stopSpeaking();
+    });
+  }
 
   updateHistoryBadge();
 
@@ -1042,12 +1068,22 @@ function initVITHPanel() {
     }
     setStatus("speaking");
     vithCore && vithCore.classList.add("speaking");
+    if (stopBtn) {
+      stopBtn.classList.remove("hidden");
+      stopBtn.classList.add("speaking-active");
+    }
+    textInput.placeholder = "VITH is speaking... (Click ⏹ Stop or press Esc)";
     startViz(true);
   };
 
   VITHVoice.onSpeakEnd = () => {
     setStatus(null);
     vithCore && vithCore.classList.remove("speaking");
+    if (stopBtn) {
+      stopBtn.classList.add("hidden");
+      stopBtn.classList.remove("speaking-active");
+    }
+    textInput.placeholder = "Ask Vith anything about Vinay...";
     startViz(false);
   };
 

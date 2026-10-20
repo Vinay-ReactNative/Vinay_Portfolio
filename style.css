@@ -868,6 +868,41 @@ section {
   animation: micPulse 1s ease-in-out infinite;
 }
 
+/* Stop speaking button state */
+.capsule-btn.capsule-stop {
+  border-color: rgba(255, 77, 77, 0.5);
+  background: rgba(255, 77, 77, 0.1);
+  color: #ff5555;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s ease;
+}
+
+.capsule-btn.capsule-stop:hover {
+  background: rgba(255, 77, 77, 0.25);
+  border-color: #ff4d4d;
+  color: #ff7777;
+  box-shadow: 0 0 16px rgba(255, 77, 77, 0.5);
+  transform: scale(1.08);
+}
+
+.capsule-btn.capsule-stop.speaking-active {
+  display: inline-flex !important;
+  animation: stopPulse 1.1s ease-in-out infinite;
+}
+
+@keyframes stopPulse {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(255, 77, 77, 0.3);
+    border-color: rgba(255, 77, 77, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 18px rgba(255, 77, 77, 0.7);
+    border-color: #ff5555;
+  }
+}
+
 @keyframes micPulse {
   0%,
   100% {
