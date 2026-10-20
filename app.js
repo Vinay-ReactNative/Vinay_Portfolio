@@ -858,7 +858,6 @@ function initVITHPanel() {
   const textInput      = document.getElementById("vith-text-input");
   const sendBtn        = document.getElementById("vith-send");
   const micBtn         = document.getElementById("vith-mic");
-  const stopBtn        = document.getElementById("vith-stop-btn");
   const voiceToggleBtn = document.getElementById("vith-voice-toggle");
   const voiceChip      = document.getElementById("vith-voice-chip");
   const historyBtn     = document.getElementById("vith-history-btn");
@@ -1055,14 +1054,6 @@ function initVITHPanel() {
     });
   }
 
-  // Dedicated Stop button in capsule bar
-  if (stopBtn) {
-    stopBtn.addEventListener("click", () => {
-      console.log("[VITH] Stop button clicked: stopping active speech.");
-      VITHVoice.stopSpeaking();
-    });
-  }
-
   // ── Fish Audio Neural TTS Status & Voice Toggle ─────────────
   function updateVoiceStatusChip(status, message) {
     if (!voiceChip) return;
@@ -1138,12 +1129,36 @@ function initVITHPanel() {
   // ── State ──────────────────────────────────────────────────
   let wantsToListen = false;
   let vizFrame = null;
+  const micIcon = micBtn.querySelector(".mic-icon");
+  const stopIcon = micBtn.querySelector(".stop-icon");
 
   // ── Status helpers ─────────────────────────────────────────
   function setStatus(mode) {
     // mode: null | "listening" | "speaking"
     dot.className = "capsule-dot" + (mode ? " " + mode : "");
     capsule.className = mode || "";
+  }
+
+  function setMicButtonState(mode) {
+    const isListening = mode === "listening";
+    const isStopping = mode === "speaking";
+    const isActive = isListening || isStopping;
+
+    micBtn.classList.toggle("mic-active", isListening);
+    micBtn.classList.toggle("stop-active", isStopping);
+    micIcon.classList.toggle("hidden", isActive);
+    stopIcon.classList.toggle("hidden", !isActive);
+    micBtn.title = isListening
+      ? "Stop listening"
+      : isStopping
+        ? "Stop VITH speaking (Esc)"
+        : "Speak to Vith";
+    micBtn.setAttribute("aria-label", isListening
+      ? "Stop voice input"
+      : isStopping
+        ? "Stop VITH speaking"
+        : "Start voice input");
+    micBtn.setAttribute("aria-pressed", String(isActive));
   }
 
   // ── Waveform animator ──────────────────────────────────────
@@ -1176,15 +1191,13 @@ function initVITHPanel() {
   // ── Voice callbacks ────────────────────────────────────────
   VITHVoice.onSpeakStart = () => {
     // Temporarily pause mic while VITH speaks to prevent hearing own voice
+    wantsToListen = false;
     if (VITHVoice.isListening) {
       VITHVoice.stopListening();
     }
     setStatus("speaking");
     vithCore && vithCore.classList.add("speaking");
-    if (stopBtn) {
-      stopBtn.classList.remove("hidden");
-      stopBtn.classList.add("speaking-active");
-    }
+    setMicButtonState("speaking");
     textInput.placeholder = "VITH is speaking... (Click ⏹ Stop or press Esc)";
     startViz(true);
   };
@@ -1192,10 +1205,7 @@ function initVITHPanel() {
   VITHVoice.onSpeakEnd = () => {
     setStatus(null);
     vithCore && vithCore.classList.remove("speaking");
-    if (stopBtn) {
-      stopBtn.classList.add("hidden");
-      stopBtn.classList.remove("speaking-active");
-    }
+    setMicButtonState(wantsToListen && VITHVoice.isListening ? "listening" : "idle");
     textInput.placeholder = "Ask Vith anything about Vinay...";
     startViz(false);
   };
@@ -1203,8 +1213,7 @@ function initVITHPanel() {
   VITHVoice.onListenStart = () => {
     console.log("%c[VITH App: onListenStart]%c Mic activated in UI. Waveform starting.", "color: #00ff88; font-weight: bold", "color: inherit");
     setStatus("listening");
-    micBtn.classList.add("mic-active");
-    micBtn.title = "Click to stop mic";
+    setMicButtonState("listening");
     textInput.placeholder = "Listening... Speak your question";
     hideMicToast();
     startViz(true);
@@ -1221,8 +1230,7 @@ function initVITHPanel() {
     }
     startViz(false);
     setStatus(null);
-    micBtn.classList.remove("mic-active");
-    micBtn.title = "Speak to Vith";
+    setMicButtonState("idle");
     textInput.placeholder = "Ask Vith anything about Vinay...";
   };
 
@@ -1241,8 +1249,7 @@ function initVITHPanel() {
     VITHVoice.stopListening();
     setStatus(null);
     startViz(false);
-    micBtn.classList.remove("mic-active");
-    micBtn.title = "Speak to Vith";
+    setMicButtonState("idle");
     textInput.style.color = "var(--text-primary)";
     textInput.value = "";
     textInput.placeholder = "Ask Vith anything about Vinay...";
@@ -1254,7 +1261,7 @@ function initVITHPanel() {
     console.warn("[VITH App: onPermissionDenied] Mic permission blocked. Reason:", reason);
     wantsToListen = false;
     VITHVoice.isListening = false;
-    micBtn.classList.remove("mic-active");
+    setMicButtonState("idle");
     setStatus(null);
     startViz(false);
     const msg = reason === "not-supported"
@@ -1377,7 +1384,9 @@ function initVITHPanel() {
   // ── Mic button — fully async, clean toggle ─────────────────
   micBtn.addEventListener("click", async () => {
     console.log(`%c[VITH App: Mic Button Click]%c wantsToListen=${wantsToListen}, VITHVoice.isListening=${VITHVoice.isListening}`, "color: #00d4ff; font-weight: bold", "color: inherit");
-    if (wantsToListen || VITHVoice.isListening) {
+    if (VITHVoice.isSpeaking) {
+      VITHVoice.stopSpeaking();
+    } else if (wantsToListen || VITHVoice.isListening) {
       // STOP listening
       console.log("[VITH App: Mic Button Click] User clicked to STOP mic.");
       wantsToListen = false;
@@ -1385,8 +1394,7 @@ function initVITHPanel() {
       clearTimeout(VITHVoice.silenceTimer);
       setStatus(null);
       startViz(false);
-      micBtn.classList.remove("mic-active");
-      micBtn.title = "Speak to Vith";
+      setMicButtonState("idle");
       textInput.placeholder = "Ask Vith anything about Vinay...";
     } else {
       // START listening

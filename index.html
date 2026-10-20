@@ -514,23 +514,6 @@
         autocomplete="off"
       />
 
-      <!-- Stop talking button (active while VITH is speaking) -->
-      <button
-        class="capsule-btn capsule-stop hidden"
-        id="vith-stop-btn"
-        title="Stop VITH speaking (Esc)"
-        aria-label="Stop VITH speaking"
-      >
-        <svg
-          width="13"
-          height="13"
-          viewBox="0 0 24 24"
-          fill="currentColor"
-        >
-          <rect x="5" y="5" width="14" height="14" rx="2" ry="2" />
-        </svg>
-      </button>
-
       <!-- Voice Mute/Unmute Toggle -->
       <button
         class="capsule-btn capsule-voice-toggle"
@@ -549,9 +532,16 @@
         </svg>
       </button>
 
-      <!-- Mic button -->
-      <button class="capsule-btn" id="vith-mic" title="Speak to Vith">
+      <!-- Microphone / stop control -->
+      <button
+        class="capsule-btn capsule-mic"
+        id="vith-mic"
+        title="Speak to Vith"
+        aria-label="Start voice input"
+        aria-pressed="false"
+      >
         <svg
+          class="mic-icon"
           width="16"
           height="16"
           viewBox="0 0 24 24"
@@ -565,6 +555,16 @@
           <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
           <line x1="12" y1="19" x2="12" y2="23" />
           <line x1="8" y1="23" x2="16" y2="23" />
+        </svg>
+        <svg
+          class="stop-icon hidden"
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          aria-hidden="true"
+        >
+          <rect x="5" y="5" width="14" height="14" rx="2" ry="2" />
         </svg>
       </button>
 
