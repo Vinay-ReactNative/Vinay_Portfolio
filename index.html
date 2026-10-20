@@ -15,8 +15,13 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <!-- ── Animated Background ───────────────────────────────── -->
-    <div id="bg-grid"></div>
+    <!-- ── Holographic Background ────────────────────────────── -->
+    <div id="holo-backdrop" aria-hidden="true">
+      <div class="holo-bg-panel holo-bg-panel-1"></div>
+      <div class="holo-bg-panel holo-bg-panel-2"></div>
+      <div class="holo-bg-panel holo-bg-panel-3"></div>
+      <div class="holo-bg-panel holo-bg-panel-4"></div>
+    </div>
     <div class="bg-glow bg-glow-1"></div>
     <div class="bg-glow bg-glow-2"></div>
     <canvas id="particle-canvas"></canvas>
@@ -183,6 +188,11 @@
 
         <!-- VITH Holographic Avatar -->
         <div class="vith-holo-container">
+          <div class="reactor-plates reactor-plates-left" aria-label="Portfolio sections">
+            <a class="reactor-plate" href="#skills"><span>⌘</span> SKILLS</a>
+            <a class="reactor-plate" href="#projects"><span>▣</span> PROJECTS</a>
+            <a class="reactor-plate" href="#experience"><span>◈</span> EXPERIENCE</a>
+          </div>
           <div class="vith-beam vith-beam-h"></div>
           <div class="vith-beam vith-beam-v"></div>
           <div class="vith-outer-ring"></div>
@@ -191,6 +201,11 @@
           <div class="vith-core" id="vith-core">
             <div class="vith-core-text">VITH</div>
             <div class="vith-core-sub">VINAY IS<br />THE HERO</div>
+          </div>
+          <div class="reactor-plates reactor-plates-right" aria-label="More portfolio sections">
+            <a class="reactor-plate" href="#about"><span>◎</span> ABOUT</a>
+            <a class="reactor-plate" href="#contact"><span>✉</span> CONTACT</a>
+            <a class="reactor-plate" href="#experience"><span>···</span> MORE</a>
           </div>
 
           <!-- Data readouts -->
@@ -447,10 +462,11 @@
 
     <!-- The capsule bar -->
     <div id="vith-capsule">
-      <!-- VITH label + status dot -->
+      <!-- VITH label + status dot + neural voice indicator -->
       <div class="capsule-brand">
         <div class="capsule-dot" id="vith-indicator"></div>
         <span class="capsule-label">VITH</span>
+        <span class="capsule-voice-chip" id="vith-voice-chip" title="Kokoro.js Neural Voice (af_heart)">[AF_HEART]</span>
       </div>
 
       <!-- Audio waveform visualizer -->
@@ -487,6 +503,24 @@
           fill="currentColor"
         >
           <rect x="5" y="5" width="14" height="14" rx="2" ry="2" />
+        </svg>
+      </button>
+
+      <!-- Voice Mute/Unmute Toggle -->
+      <button
+        class="capsule-btn capsule-voice-toggle"
+        id="vith-voice-toggle"
+        title="Voice Output: Active (Click to mute)"
+        aria-label="Toggle VITH Voice"
+      >
+        <svg class="voice-icon-on" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+        </svg>
+        <svg class="voice-icon-off hidden" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+          <line x1="23" y1="9" x2="17" y2="15"></line>
+          <line x1="17" y1="9" x2="23" y2="15"></line>
         </svg>
       </button>
 
@@ -657,6 +691,7 @@
     </div>
 
     <!-- ── Scripts ────────────────────────────────────────────── -->
+    <script type="module" src="kokoro-tts.js"></script>
     <script src="knowledge-base.js"></script>
     <script src="voice-engine.js"></script>
     <script src="app.js"></script>

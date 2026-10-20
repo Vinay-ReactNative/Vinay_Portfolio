@@ -1,23 +1,18 @@
 /**
  * VITH Voice Engine
- * Handles Text-to-Speech (Fish Audio "Sarah" + Web Speech API fallback)
+ * Handles Neural Text-to-Speech (Kokoro.js "af_heart" with Web Speech API fallback)
  * and Speech-to-Text (Web Speech API)
  */
 
 const VITHVoice = {
   // ─── CONFIG ──────────────────────────────────────────────────────────────
   config: {
-    fishAudio: {
-      apiKey: "sk-fish-Ob7JINBI5EPoxos6h-rVa1gKjoHy9uReHh58Ku47ODk",
-      voiceName: "Sarah",
-      voiceId: "933563129e564b19a115bedd57b7406a", // Sarah voice model ID on fish.audio
-      model: "s2.1-pro",
-      format: "mp3",
-      endpoint: "https://api.fish.audio/v1/tts",
-      proxyEndpoint: "/api/tts"
+    kokoro: {
+      model: "onnx-community/Kokoro-82M-v1.0-ONNX",
+      voice: "af_heart",
+      dtype: "q8"
     },
     tts: {
-      useFallback: false, // Tries Fish Audio first; seamlessly falls back if credit exhausted or offline
       rate: 1.05,         // Slightly faster = more energetic/youthful
       pitch: 1.15,        // Higher pitch = female, friendly tone
       volume: 1.0,
@@ -53,12 +48,32 @@ const VITHVoice = {
   async init() {
     this._initSTT();
     this._initWebSpeech();
-    if (!this.config.fishAudio.apiKey) {
-      console.log("[VITH] Fish Audio API key not set. Using Web Speech API.");
-      this.config.tts.useFallback = true;
-    } else {
-      console.log("[VITH] Fish Audio initialized with voice Sarah (reference_id: " + this.config.fishAudio.voiceId + ")");
+
+    // Connect with Kokoro Neural TTS service
+    const connectNeuralTTS = () => {
+      if (typeof window !== "undefined" && window.VITH_TTS) {
+        window.VITH_TTS.visualizerCallback = (avg) => {
+          if (this.visualizerCallback) this.visualizerCallback(avg);
+        };
+        window.VITH_TTS.onStart = () => {
+          this.isSpeaking = true;
+          if (this.onSpeakStart) this.onSpeakStart();
+        };
+        window.VITH_TTS.onEnd = () => {
+          this.isSpeaking = false;
+          if (this.onSpeakEnd) this.onSpeakEnd();
+        };
+      }
+    };
+
+    if (typeof window !== "undefined") {
+      if (window.VITH_TTS) {
+        connectNeuralTTS();
+      } else {
+        window.addEventListener("vith-tts-ready", () => connectNeuralTTS(), { once: true });
+      }
     }
+
     return this;
   },
 
@@ -223,107 +238,30 @@ const VITHVoice = {
   async speak(text) {
     if (!text) return;
     this.stopSpeaking();
-    const processed = this._preprocessSpeech(text);
+
+    // Check if user disabled voice output
+    if (typeof window !== "undefined" && window.VITH_TTS && window.VITH_TTS.voiceEnabled === false) {
+      console.log("[VITH Voice] Voice output is muted.");
+      if (this.onSpeakEnd) this.onSpeakEnd();
+      return;
+    }
 
     if (this.onSpeakStart) this.onSpeakStart();
     this.isSpeaking = true;
 
-    if (this.config.fishAudio.apiKey && !this.config.tts.useFallback) {
-      await this._speakFishAudio(processed);
-    } else {
-      this._speakWebSpeech(processed);
-    }
-  },
-
-  async _speakFishAudio(text) {
-    const { apiKey, voiceId, model, format, endpoint, proxyEndpoint } = this.config.fishAudio;
-    const payload = {
-      text,
-      reference_id: voiceId,
-      format: format || "mp3"
-    };
-
-    try {
-      let response;
-      // 1. Try local proxy if running
+    // Primary: Kokoro.js Neural TTS (af_heart)
+    if (typeof window !== "undefined" && window.VITH_TTS) {
       try {
-        const proxyRes = await fetch(proxyEndpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-        if (proxyRes.ok || proxyRes.status !== 404) {
-          response = proxyRes;
-        }
-      } catch (proxyErr) {
-        // No local proxy, continue to direct endpoint
+        await window.VITH_TTS.speak(text);
+        return;
+      } catch (err) {
+        console.warn("[VITH Voice] Kokoro TTS synthesis error, using Web Speech fallback:", err);
       }
-
-      // 2. Direct API request
-      if (!response) {
-        response = await fetch(endpoint, {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${apiKey}`,
-            "Content-Type": "application/json",
-            "model": model || "s2.1-pro"
-          },
-          body: JSON.stringify(payload)
-        });
-      }
-
-      if (!response.ok) {
-        if (response.status === 402) {
-          console.warn(
-            "[VITH Fish Audio] Insufficient API credit (HTTP 402). Top up API credits at https://fish.audio/app/developers. Seamlessly using natural Web Speech engine."
-          );
-        } else {
-          console.warn(`[VITH Fish Audio] API returned HTTP ${response.status}: ${response.statusText}. Using Web Speech fallback.`);
-        }
-        throw new Error(`Fish Audio API error: ${response.status}`);
-      }
-
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const audio = new Audio(url);
-      this.currentAudio = audio;
-
-      // Wire up visualizer
-      if (this.visualizerCallback) {
-        try {
-          const AudioContext = window.AudioContext || window.webkitAudioContext;
-          if (AudioContext) {
-            const ctx = new AudioContext();
-            const source = ctx.createMediaElementSource(audio);
-            const analyser = ctx.createAnalyser();
-            analyser.fftSize = 256;
-            source.connect(analyser);
-            analyser.connect(ctx.destination);
-            this._driveVisualizer(analyser);
-          }
-        } catch (visErr) {
-          console.warn("[VITH Audio Visualizer]", visErr);
-        }
-      }
-
-      audio.onended = () => {
-        this.isSpeaking = false;
-        URL.revokeObjectURL(url);
-        if (this.onSpeakEnd) this.onSpeakEnd();
-      };
-
-      audio.onerror = (err) => {
-        console.warn("[VITH Fish Audio] Audio element playback error, falling back to Web Speech:", err);
-        this.isSpeaking = false;
-        URL.revokeObjectURL(url);
-        this._speakWebSpeech(text);
-      };
-
-      await audio.play();
-    } catch (err) {
-      console.warn("[VITH Fish Audio] Falling back to Web Speech synthesis:", err.message);
-      this._speakWebSpeech(text);
     }
+
+    // Secondary fallback: Web Speech API
+    const processed = this._preprocessSpeech(text);
+    this._speakWebSpeech(processed);
   },
 
   _activeUtterance: null,
@@ -453,6 +391,13 @@ const VITHVoice = {
     clearInterval(this._resumeInterval);
     this._activeUtterance = null;
     const wasSpeaking = this.isSpeaking;
+
+    // Stop Kokoro neural TTS
+    if (typeof window !== "undefined" && window.VITH_TTS) {
+      try {
+        window.VITH_TTS.stop();
+      } catch (e) {}
+    }
 
     if (this.currentAudio) {
       try {

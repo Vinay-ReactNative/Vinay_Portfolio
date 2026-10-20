@@ -35,11 +35,18 @@
 * **Smart Visibility Checks**: Detects if an element is already in the viewport to avoid disruptive jumps on follow-up queries.
 * **Accessibility / Reduced Motion**: Fully respects `prefers-reduced-motion: reduce` system preferences.
 
-### 3. 🎙️ Voice & Audio Pipeline
+### 3. 🎙️ Neural Voice & Audio Pipeline (Kokoro.js `af_heart`)
 * **Real-time Speech Recognition (STT)**: Uses Web Speech API with live transcript streaming into the assistant input.
 * **Automatic 1.8s Silence Auto-Submit**: Intelligent pause detection automatically submits speech after 1.8 seconds of silence without requiring manual button clicks.
-* **Text-to-Speech (TTS) — Fish Audio "Sarah"**: High-fidelity neural voice generation powered by Fish Audio (`s2.1-pro` / `s2-pro` with Sarah model `933563129e564b19a115bedd57b7406a`), paired with natural Web Speech synthesis fallback.
-* **Instant Speech Interruption / Stop Option**: Dedicated holographic Stop button (`⏹`), `Esc` hotkey, and avatar core tap to immediately interrupt or cancel VITH's speech mid-sentence.
+* **Client-Side Neural TTS (Kokoro.js — `af_heart`)**: High-fidelity, crystal-clear female neural voice generation powered by `onnx-community/Kokoro-82M-v1.0-ONNX` (quantized `q8`).
+  * **Zero External API Keys**: Runs 100% in the visitor's browser — no backend proxy, no usage limits, no ElevenLabs or Fish Audio API keys required!
+  * **Hardware Acceleration**: Automatic WebGPU execution for ultra-fast, stutter-free synthesis, with seamless fallback to WebAssembly (WASM).
+  * **Browser Speech Synthesis Fallback**: Automatic failover to Web Speech API if ONNX initialization is unsupported, ensuring VITH is never silent.
+  * **Audio Equalizer Visualizer**: Connected directly to the Web Audio API to drive real-time HUD waveform equalizer bars during speech.
+* **Voice Controls & HUD Indicator**:
+  * **Voice Mute/Unmute Toggle (`🔊`/`🔇`)**: Easily toggle spoken output on or off; visitor preference is preserved in `localStorage`.
+  * **HUD Voice Status Chip**: Dynamic Stark-tech badge (`[AF_HEART]`, `[WEBGPU]`, `[WASM]`, `[MUTED]`, `[BROWSER TTS]`) showing real-time engine state.
+* **Instant Speech Interruption**: Dedicated holographic Stop button (`⏹`), `Esc` hotkey, and avatar core tap to immediately interrupt or cancel VITH's speech mid-sentence.
 * **Audio Feedback Loop Prevention**: Automatically pauses microphone recognition while VITH is speaking to prevent self-hearing.
 
 ### 4. 🗂️ Conversation Intel History Panel
@@ -67,11 +74,13 @@ Vinay_Portfolio/
 ├── index.html              # Core HTML structure, HUD overlays, modals & sections
 ├── style.css               # Holographic cyberpunk styling, animations & theme
 ├── app.js                  # Main controller: navigation, particles, DOM & modals
+├── kokoro-tts.js           # Browser-based Kokoro.js neural TTS service (af_heart)
 ├── voice-engine.js         # STT & TTS engine, silence detection, mic manager
 ├── knowledge-base.js       # Single source of truth: Vinay's data & VITH Q&A engine
+├── server.js               # Zero-dependency local dev static file server
 ├── screenshots/            # Portfolio preview media
 ├── .gitignore              # Ignores node_modules, temp files, and OS caches
-├── package.json            # Project dependencies
+├── package.json            # Project dependencies (kokoro-js, etc.)
 └── README.md               # Documentation & usage guide
 ```
 
@@ -79,28 +88,37 @@ Vinay_Portfolio/
 
 ## 🚀 Quick Start
 
-### Option A: Local HTTP Server (Recommended)
-Because modern browsers require HTTPS or `localhost` for microphone permissions (SpeechRecognition), run a local server:
+### 1. Zero API Keys Required!
+VITH uses **Kokoro.js (`af_heart`)** to synthesize neural speech directly inside the visitor's browser using WebGPU or WASM. No external API keys, tokens, or subscription plans are needed.
 
-**Using Python:**
-```bash
-python -m http.server 8080
-```
-Then open: **`http://localhost:8080`**
+### 2. Local Development Server
+To run locally, start the built-in static dev server:
 
-**Using Node.js:**
-```bash
-npx serve .
+```powershell
+npm start
 ```
 
-**Using VS Code:**
-Install the **Live Server** extension and click **"Go Live"** (default port: `5500`).
+Then open **`http://localhost:5050`** in Chrome or Edge.
+
+*(Alternatively, you can open the project with VS Code Live Server or Python's `python -m http.server 5050`)*.
+
+---
+
+## 🌐 Netlify & Static Deployment
+
+Because VITH runs 100% on client-side Web APIs, it can be deployed directly as a static site to **Netlify**, **Vercel**, or **GitHub Pages**:
+
+### Deploy to Netlify
+1. Connect your repository to Netlify: `https://github.com/Vinay-ReactNative/Vinay_Portfolio`
+2. **Build command**: *(leave empty)*
+3. **Publish directory**: `.` (root directory)
+4. Deploy! Your portfolio is live with full neural speech capabilities.
 
 ---
 
 ## 🎤 Microphone & Voice Setup
 
-1. **Browser Support**: For speech-to-text recognition, use **Google Chrome** or **Microsoft Edge**.
+1. **Browser Support**: For speech-to-text recognition and WebGPU acceleration, use **Google Chrome** or **Microsoft Edge**.
 2. **Microphone Permissions**:
    * When prompted, click **Allow** for microphone access.
    * If blocked, click the 🔒 lock icon in the browser address bar, set **Microphone** to **Allow**, and refresh.

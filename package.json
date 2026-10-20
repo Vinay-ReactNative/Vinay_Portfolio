@@ -6,6 +6,7 @@
     "start": "node server.js"
   },
   "dependencies": {
-    "html2canvas": "^1.4.1"
+    "html2canvas": "^1.4.1",
+    "kokoro-js": "^1.2.1"
   }
 }

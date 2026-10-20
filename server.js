@@ -10,7 +10,7 @@ const path = require("path");
 
 const PORT = process.env.PORT || 5050;
 const ROOT = __dirname;
-const FISH_API_KEY = process.env.FISH_API_KEY || "sk-fish-Ob7JINBI5EPoxos6h-rVa1gKjoHy9uReHh58Ku47ODk";
+const FISH_API_KEY = process.env.FISH_API_KEY;
 
 const MIME_TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -39,44 +39,73 @@ const server = http.createServer(async (req, res) => {
 
   // ── Fish Audio TTS Proxy ──────────────────────────────────────────────
   if (req.url === "/api/tts" && req.method === "POST") {
-    let bodyData = "";
-    req.on("data", chunk => { bodyData += chunk; });
-    req.on("end", async () => {
-      try {
-        const payload = JSON.parse(bodyData || "{}");
-        const fishRes = await fetch("https://api.fish.audio/v1/tts", {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${FISH_API_KEY}`,
-            "Content-Type": "application/json",
-            "model": "s2.1-pro"
-          },
-          body: JSON.stringify(payload)
-        });
+    if (!FISH_API_KEY) {
+      res.writeHead(503, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Fish Audio is not configured. Set FISH_API_KEY on the server." }));
+      return;
+    }
 
-        res.writeHead(fishRes.status, {
-          "Content-Type": fishRes.headers.get("content-type") || "audio/mpeg",
-          "Access-Control-Allow-Origin": "*"
-        });
-
-        if (!fishRes.ok) {
-          const errText = await fishRes.text();
-          res.end(errText);
+    try {
+      const chunks = [];
+      let bodySize = 0;
+      for await (const chunk of req) {
+        bodySize += chunk.length;
+        if (bodySize > 1024 * 1024) {
+          res.writeHead(413, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "TTS request body exceeds the 1 MB limit." }));
           return;
         }
-
-        const arrayBuf = await fishRes.arrayBuffer();
-        res.end(Buffer.from(arrayBuf));
-      } catch (err) {
-        console.error("[VITH Proxy Error]", err);
-        res.writeHead(500, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ error: err.message }));
+        chunks.push(chunk);
       }
-    });
+
+      let payload;
+      try {
+        payload = JSON.parse(Buffer.concat(chunks).toString("utf8"));
+      } catch (err) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Request body must be valid JSON." }));
+        return;
+      }
+
+      if (!payload || typeof payload.text !== "string" || !payload.text.trim() || typeof payload.reference_id !== "string") {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Request must include non-empty text and a reference_id." }));
+        return;
+      }
+
+      const fishRes = await fetch("https://api.fish.audio/v1/tts", {
+        method: "POST",
+        headers: {
+          "Authorization": "Bearer " + FISH_API_KEY,
+          "Content-Type": "application/json",
+          "model": "s2-pro"
+        },
+        body: JSON.stringify({
+          text: payload.text,
+          reference_id: payload.reference_id,
+          format: payload.format || "mp3"
+        })
+      });
+
+      const responseBody = Buffer.from(await fishRes.arrayBuffer());
+      const contentType = fishRes.headers.get("content-type") || "audio/mpeg";
+      res.writeHead(fishRes.status, { "Content-Type": contentType });
+      res.end(responseBody);
+
+      if (!fishRes.ok) {
+        console.error("[VITH TTS] Fish Audio returned HTTP " + fishRes.status + ": " + responseBody.toString("utf8").slice(0, 1000));
+      }
+    } catch (err) {
+      console.error("[VITH TTS] Proxy request failed:", err);
+      if (!res.headersSent) {
+        res.writeHead(502, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Unable to reach Fish Audio from the server." }));
+      }
+    }
     return;
   }
 
-  // ── Static File Server ────────────────────────────────────────────────
+  // Static file server
   let reqPath = req.url.split("?")[0];
   if (reqPath === "/") reqPath = "/index.html";
   const filePath = path.join(ROOT, reqPath);

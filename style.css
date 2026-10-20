@@ -66,52 +66,83 @@ body {
   border-radius: 2px;
 }
 
-/* ── Animated Background Grid ─────────────────────────────── */
-#bg-grid {
+/* ── Holographic Background Panels ────────────────────────── */
+#holo-backdrop {
   position: fixed;
   inset: 0;
   z-index: 0;
-  background-image:
-    linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
-  background-size: 40px 40px;
-  animation: gridShift 20s linear infinite;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% 76%, rgba(0, 133, 205, 0.13), transparent 33%),
+    radial-gradient(ellipse at 18% 26%, rgba(0, 119, 255, 0.1), transparent 38%),
+    radial-gradient(ellipse at 84% 34%, rgba(0, 212, 255, 0.07), transparent 34%),
+    linear-gradient(180deg, #00070d 0%, #03111d 52%, #01070d 100%);
 }
 
-@keyframes gridShift {
-  0% {
-    background-position: 0 0;
-  }
-  100% {
-    background-position: 40px 40px;
-  }
-}
-
-/* Scanning line */
-#bg-grid::after {
+#holo-backdrop::before,
+#holo-backdrop::after {
   content: "";
   position: absolute;
-  top: -2px;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    var(--holo-cyan),
-    transparent
-  );
-  animation: scanline 8s linear infinite;
-  opacity: 0.4;
+  inset: 0;
 }
 
-@keyframes scanline {
-  0% {
-    transform: translateY(0);
-  }
-  100% {
-    transform: translateY(100vh);
-  }
+#holo-backdrop::before {
+  background:
+    linear-gradient(90deg, transparent 7%, rgba(0, 212, 255, 0.045) 7.15%, transparent 7.5%, transparent 23%, rgba(0, 212, 255, 0.035) 23.15%, transparent 23.5%, transparent 76%, rgba(0, 212, 255, 0.035) 76.15%, transparent 76.5%, transparent 92%, rgba(0, 212, 255, 0.045) 92.15%, transparent 92.5%),
+    linear-gradient(180deg, transparent 0 10%, rgba(0, 212, 255, 0.055) 10.1%, transparent 10.3% 43%, rgba(0, 212, 255, 0.035) 43.1%, transparent 43.3% 100%),
+    linear-gradient(105deg, transparent 35%, rgba(0, 128, 210, 0.07) 48%, transparent 55%),
+    linear-gradient(255deg, transparent 42%, rgba(0, 128, 210, 0.06) 51%, transparent 59%);
+  opacity: 0.8;
+}
+
+#holo-backdrop::after {
+  inset: auto -8% -16% -8%;
+  height: 39%;
+  border-top: 1px solid rgba(0, 212, 255, 0.14);
+  background:
+    radial-gradient(ellipse at 50% 0, rgba(0, 170, 255, 0.13), transparent 46%),
+    linear-gradient(180deg, rgba(0, 15, 26, 0.05), rgba(0, 2, 6, 0.92));
+  clip-path: polygon(14% 0, 86% 0, 100% 100%, 0 100%);
+}
+
+.holo-bg-panel {
+  position: absolute;
+  border: 1px solid rgba(0, 212, 255, 0.12);
+  background:
+    linear-gradient(145deg, rgba(0, 212, 255, 0.04), rgba(0, 70, 130, 0.012) 58%, rgba(0, 212, 255, 0.025));
+  box-shadow:
+    inset 0 0 70px rgba(0, 119, 255, 0.035),
+    0 0 28px rgba(0, 180, 255, 0.025);
+  opacity: 0.58;
+}
+
+.holo-bg-panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 15%, rgba(0, 212, 255, 0.045) 50%, transparent 82%);
+  opacity: 0.7;
+}
+
+.holo-bg-panel-1 {
+  inset: -18% 46% 48% -12%;
+  clip-path: polygon(0 0, 100% 0, 78% 72%, 54% 100%, 0 78%);
+}
+
+.holo-bg-panel-2 {
+  inset: -12% -14% 55% 62%;
+  clip-path: polygon(18% 0, 100% 0, 100% 100%, 0 74%);
+}
+
+.holo-bg-panel-3 {
+  inset: 52% 48% -24% -18%;
+  clip-path: polygon(0 0, 74% 16%, 100% 100%, 0 100%);
+}
+
+.holo-bg-panel-4 {
+  inset: 42% -20% -18% 68%;
+  clip-path: polygon(0 0, 100% 16%, 100% 100%, 26% 100%);
 }
 
 /* Background radial glow */
@@ -363,15 +394,46 @@ section {
 /* ── HERO SECTION ─────────────────────────────────────────── */
 #hero {
   position: relative;
+  isolation: isolate;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4rem;
+  grid-template-columns: minmax(0, 0.88fr) minmax(0, 1.12fr);
+  gap: clamp(1rem, 3vw, 3rem);
   align-items: center;
   min-height: 100vh;
-  padding-top: 100px;
+  padding: 110px 5% 125px;
+}
+
+#hero::before,
+#hero::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+}
+
+#hero::before {
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 67% 47%, rgba(0, 175, 255, 0.14), transparent 33%),
+    linear-gradient(90deg, transparent 0 8%, rgba(0, 212, 255, 0.035) 8.1%, transparent 8.3% 91.7%, rgba(0, 212, 255, 0.035) 91.9%, transparent 92%),
+    linear-gradient(180deg, rgba(0, 2, 6, 0.2), transparent 30% 68%, rgba(0, 2, 6, 0.38));
+}
+
+#hero::after {
+  left: -5%;
+  right: -5%;
+  bottom: -2px;
+  height: 23%;
+  border-top: 1px solid rgba(0, 212, 255, 0.2);
+  background:
+    radial-gradient(ellipse at 62% 0, rgba(0, 212, 255, 0.18), transparent 32%),
+    linear-gradient(180deg, rgba(0, 20, 34, 0.12), rgba(0, 3, 8, 0.72));
+  clip-path: polygon(8% 0, 92% 0, 100% 100%, 0 100%);
 }
 
 .hero-content {
+  position: relative;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -487,18 +549,58 @@ section {
 /* ── VITH Avatar / Hologram ───────────────────────────────── */
 .vith-holo-container {
   position: relative;
+  isolation: isolate;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 500px;
+  height: min(68vh, 650px);
+  min-height: 520px;
+}
+
+.vith-holo-container::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: 50%;
+  bottom: 3%;
+  width: min(82%, 480px);
+  height: 16%;
+  transform: translateX(-50%);
+  border: 1px solid rgba(0, 212, 255, 0.55);
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse at center, rgba(0, 212, 255, 0.32), rgba(0, 28, 46, 0.74) 48%, rgba(0, 5, 12, 0.92) 72%);
+  box-shadow:
+    0 0 18px rgba(0, 212, 255, 0.5),
+    0 0 50px rgba(0, 119, 255, 0.22),
+    inset 0 0 24px rgba(0, 212, 255, 0.38);
+}
+
+.vith-holo-container::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: 50%;
+  bottom: 11%;
+  width: min(36%, 190px);
+  height: 66%;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, transparent, rgba(0, 180, 255, 0.045) 25%, rgba(0, 212, 255, 0.16) 85%, rgba(0, 212, 255, 0.44));
+  clip-path: polygon(42% 0, 58% 0, 100% 100%, 0 100%);
+  filter: blur(9px);
 }
 
 .vith-outer-ring {
   position: absolute;
-  width: 380px;
-  height: 380px;
+  width: min(76%, 480px);
+  aspect-ratio: 1;
   border-radius: 50%;
-  border: 1px solid rgba(0, 212, 255, 0.2);
+  border: 2px solid rgba(0, 212, 255, 0.32);
+  background:
+    conic-gradient(from 12deg, transparent 0deg 8deg, rgba(0, 212, 255, 0.85) 9deg 11deg, transparent 12deg 38deg, rgba(0, 212, 255, 0.34) 39deg 40deg, transparent 41deg 88deg, rgba(255, 170, 0, 0.72) 89deg 91deg, transparent 92deg 178deg, rgba(0, 212, 255, 0.7) 179deg 182deg, transparent 183deg 268deg, rgba(255, 170, 0, 0.62) 269deg 271deg, transparent 272deg 360deg);
+  box-shadow:
+    0 0 14px rgba(0, 212, 255, 0.24),
+    inset 0 0 22px rgba(0, 212, 255, 0.12);
   animation: rotateSlow 20s linear infinite;
 }
 
@@ -517,10 +619,14 @@ section {
 
 .vith-mid-ring {
   position: absolute;
-  width: 300px;
-  height: 300px;
+  width: min(60%, 380px);
+  aspect-ratio: 1;
   border-radius: 50%;
-  border: 1px solid rgba(0, 212, 255, 0.35);
+  border: 8px solid transparent;
+  background:
+    linear-gradient(#03111d, #03111d) padding-box,
+    conic-gradient(from 170deg, rgba(0, 212, 255, 0.12), rgba(0, 212, 255, 0.95) 18%, rgba(0, 50, 85, 0.5) 28%, rgba(0, 212, 255, 0.76) 42%, rgba(255, 170, 0, 0.88) 45%, rgba(0, 50, 85, 0.42) 52%, rgba(0, 212, 255, 0.9) 70%, rgba(0, 212, 255, 0.15)) border-box;
+  box-shadow: 0 0 22px rgba(0, 212, 255, 0.32), inset 0 0 16px rgba(0, 212, 255, 0.2);
   animation: rotateSlow 12s linear infinite reverse;
 }
 
@@ -547,11 +653,12 @@ section {
 
 .vith-inner-ring {
   position: absolute;
-  width: 220px;
-  height: 220px;
+  width: min(44%, 280px);
+  aspect-ratio: 1;
   border-radius: 50%;
-  border: 2px solid rgba(0, 212, 255, 0.5);
-  box-shadow: var(--glow-md);
+  border: 2px solid rgba(0, 212, 255, 0.66);
+  background: repeating-conic-gradient(from 0deg, rgba(0, 212, 255, 0.52) 0deg 1deg, transparent 1deg 15deg);
+  box-shadow: 0 0 24px rgba(0, 212, 255, 0.55), inset 0 0 25px rgba(0, 212, 255, 0.28);
   animation: rotateSlow 8s linear infinite;
 }
 
@@ -566,19 +673,22 @@ section {
 
 .vith-core {
   position: relative;
-  width: 160px;
-  height: 160px;
+  z-index: 1;
+  width: min(31%, 200px);
+  aspect-ratio: 1;
   border-radius: 50%;
   background: radial-gradient(
     circle,
-    rgba(0, 212, 255, 0.15) 0%,
-    rgba(0, 77, 128, 0.1) 60%,
-    transparent 100%
+    rgba(0, 212, 255, 0.28) 0%,
+    rgba(0, 77, 128, 0.45) 42%,
+    rgba(0, 12, 25, 0.96) 74%,
+    rgba(0, 212, 255, 0.18) 100%
   );
-  border: 2px solid rgba(0, 212, 255, 0.6);
+  border: 3px solid rgba(0, 212, 255, 0.76);
   box-shadow:
     var(--glow-lg),
-    inset 0 0 40px rgba(0, 212, 255, 0.1);
+    inset 0 0 42px rgba(0, 212, 255, 0.32),
+    0 0 0 9px rgba(0, 212, 255, 0.08);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -612,7 +722,7 @@ section {
 
 .vith-core-sub {
   font-family: var(--font-mono);
-  font-size: 0.45rem;
+  font-size: clamp(0.38rem, 0.7vw, 0.55rem);
   color: var(--text-dim);
   letter-spacing: 1px;
   text-align: center;
@@ -648,11 +758,11 @@ section {
 }
 
 .vith-beam-h {
-  width: 380px;
+  width: min(78%, 500px);
 }
 .vith-beam-v {
   width: 1px;
-  height: 380px;
+  height: min(78%, 500px);
   background: linear-gradient(
     to bottom,
     transparent,
@@ -674,6 +784,7 @@ section {
 /* Holographic data readouts around avatar */
 .vith-data-readout {
   position: absolute;
+  z-index: 3;
   font-family: var(--font-mono);
   font-size: 0.55rem;
   color: var(--text-muted);
@@ -682,13 +793,63 @@ section {
 }
 
 .vith-data-readout-tl {
-  top: 20px;
-  left: 10px;
+  top: 4%;
+  left: 2%;
 }
 .vith-data-readout-br {
-  bottom: 20px;
-  right: 10px;
+  bottom: 3%;
+  right: 2%;
   text-align: right;
+}
+
+.reactor-plates {
+  position: absolute;
+  z-index: 4;
+  top: 50%;
+  display: grid;
+  gap: 12px;
+  transform: translateY(-50%);
+}
+
+.reactor-plates-left {
+  left: 0;
+}
+
+.reactor-plates-right {
+  right: 0;
+}
+
+.reactor-plate {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 112px;
+  padding: 10px 12px;
+  border: 1px solid rgba(0, 212, 255, 0.62);
+  color: var(--text-primary);
+  background: linear-gradient(110deg, rgba(0, 38, 60, 0.88), rgba(0, 10, 22, 0.68));
+  box-shadow: inset 0 0 18px rgba(0, 212, 255, 0.08), 0 0 12px rgba(0, 212, 255, 0.12);
+  clip-path: polygon(0 0, 91% 0, 100% 22%, 100% 100%, 8% 100%, 0 78%);
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 1px;
+  text-decoration: none;
+  transition: color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.reactor-plate span {
+  color: var(--holo-cyan);
+  font-size: 0.9rem;
+  text-shadow: var(--glow-sm);
+}
+
+.reactor-plate:hover,
+.reactor-plate:focus-visible {
+  color: #fff;
+  background: rgba(0, 122, 180, 0.62);
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.34);
+  outline: none;
 }
 
 @keyframes dataFlicker {
@@ -790,6 +951,53 @@ section {
   color: var(--holo-cyan);
   text-shadow: 0 0 8px rgba(0, 212, 255, 0.5);
   user-select: none;
+}
+
+/* Neural Voice Engine Status Chip */
+.capsule-voice-chip {
+  font-family: var(--font-mono);
+  font-size: 0.52rem;
+  letter-spacing: 1px;
+  color: var(--holo-cyan);
+  background: rgba(0, 212, 255, 0.08);
+  border: 1px solid rgba(0, 212, 255, 0.35);
+  border-radius: 3px;
+  padding: 2px 6px;
+  text-transform: uppercase;
+  user-select: none;
+  white-space: nowrap;
+  transition: all 0.25s ease;
+}
+
+.capsule-voice-chip.loading {
+  color: var(--holo-gold);
+  border-color: rgba(255, 170, 0, 0.5);
+  background: rgba(255, 170, 0, 0.08);
+  animation: pulse 1s ease-in-out infinite;
+}
+
+.capsule-voice-chip.speaking {
+  color: var(--holo-green);
+  border-color: rgba(0, 255, 136, 0.5);
+  background: rgba(0, 255, 136, 0.08);
+  box-shadow: 0 0 8px rgba(0, 255, 136, 0.3);
+}
+
+.capsule-voice-chip.muted {
+  color: var(--text-dim);
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.capsule-voice-chip.fallback {
+  color: var(--holo-gold);
+  border-color: rgba(255, 170, 0, 0.35);
+}
+
+@media (max-width: 600px) {
+  .capsule-voice-chip {
+    display: none;
+  }
 }
 
 /* Waveform visualizer inside capsule */
@@ -911,6 +1119,46 @@ section {
   50% {
     box-shadow: 0 0 28px rgba(255, 170, 0, 0.6);
   }
+}
+
+/* Voice Mute/Unmute Toggle Button */
+.capsule-btn.capsule-voice-toggle {
+  background: rgba(0, 212, 255, 0.06);
+  border-color: rgba(0, 212, 255, 0.35);
+  color: var(--holo-cyan);
+  position: relative;
+  transition: all 0.25s ease;
+}
+
+.capsule-btn.capsule-voice-toggle:hover {
+  background: rgba(0, 212, 255, 0.16);
+  border-color: var(--holo-cyan);
+  box-shadow: 0 0 14px rgba(0, 212, 255, 0.3);
+}
+
+.capsule-btn.capsule-voice-toggle.voice-muted {
+  background: rgba(255, 170, 0, 0.08);
+  border-color: rgba(255, 170, 0, 0.45);
+  color: var(--holo-gold);
+}
+
+.capsule-btn.capsule-voice-toggle.voice-muted:hover {
+  background: rgba(255, 170, 0, 0.18);
+  border-color: var(--holo-gold);
+  box-shadow: 0 0 14px rgba(255, 170, 0, 0.35);
+}
+
+.capsule-btn.capsule-voice-toggle .voice-icon-on,
+.capsule-btn.capsule-voice-toggle .voice-icon-off {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.capsule-btn.capsule-voice-toggle.voice-muted .voice-icon-on {
+  display: none !important;
+}
+
+.capsule-btn.capsule-voice-toggle.voice-muted .voice-icon-off {
+  display: block !important;
 }
 
 /* Send button accent */
@@ -2458,23 +2706,23 @@ footer {
     grid-template-columns: 1fr;
   }
   .vith-holo-container {
-    height: 300px;
+    height: 440px;
+    min-height: 0;
+  }
+  .reactor-plates {
+    display: none;
   }
   .vith-outer-ring {
-    width: 260px;
-    height: 260px;
+    width: min(76vw, 360px);
   }
   .vith-mid-ring {
-    width: 200px;
-    height: 200px;
+    width: min(60vw, 290px);
   }
   .vith-inner-ring {
-    width: 150px;
-    height: 150px;
+    width: min(44vw, 220px);
   }
   .vith-core {
-    width: 110px;
-    height: 110px;
+    width: min(31vw, 150px);
   }
   #vith-panel {
     width: 320px;
@@ -2486,6 +2734,25 @@ footer {
 @media (max-width: 600px) {
   section {
     padding: 60px 5%;
+  }
+  #hero {
+    gap: 1rem;
+    padding-top: 92px;
+    padding-bottom: 112px;
+  }
+  .vith-holo-container {
+    height: 300px;
+  }
+  .vith-data-readout {
+    display: none;
+  }
+  .hero-actions {
+    justify-content: center;
+  }
+  .hero-actions .btn-holo {
+    padding: 10px 12px;
+    font-size: 0.56rem;
+    letter-spacing: 1px;
   }
   #vith-panel {
     width: calc(100vw - 20px);
@@ -2587,6 +2854,12 @@ footer {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .vith-outer-ring,
+  .vith-mid-ring,
+  .vith-inner-ring,
+  .vith-core {
+    animation: none !important;
+  }
   .vith-highlight-card {
     animation: none !important;
     transform: none !important;

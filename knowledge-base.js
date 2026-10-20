@@ -501,6 +501,7 @@ const VITH_QA = {
       name: "ABOUT_VINAY",
       weight: 16,
       section: "about",
+      fallbackWhenOtherIntent: true,
       keywords: [
         "who is vinay",
         "tell me about vinay",
@@ -816,10 +817,17 @@ const VITH_QA = {
 
     // 2. Score patterns using padded whole-phrase matching
     const paddedQ = " " + q + " ";
+    const hasSpecificIntent = this.patterns.some(pattern =>
+      !pattern.fallbackWhenOtherIntent &&
+      pattern.section &&
+      pattern.keywords.some(kw => paddedQ.includes(" " + kw + " "))
+    );
     let bestPattern = null;
     let highestScore = 0;
 
     for (const pattern of this.patterns) {
+      if (pattern.fallbackWhenOtherIntent && hasSpecificIntent) continue;
+
       let score = 0;
       for (const kw of pattern.keywords) {
         if (paddedQ.includes(" " + kw + " ")) {

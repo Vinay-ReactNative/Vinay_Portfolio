@@ -812,17 +812,19 @@ function navigateAndHighlight(sectionId, targetItem = null, shouldOpenModal = fa
 //  VITH CAPSULE — Slim bottom bar with fixed mic + chat bubbles
 // ══════════════════════════════════════════════════════════════
 function initVITHPanel() {
-  const capsule   = document.getElementById("vith-capsule");
-  const msgStrip  = document.getElementById("vith-messages");
-  const textInput = document.getElementById("vith-text-input");
-  const sendBtn   = document.getElementById("vith-send");
-  const micBtn    = document.getElementById("vith-mic");
-  const stopBtn   = document.getElementById("vith-stop-btn");
-  const historyBtn = document.getElementById("vith-history-btn");
-  const historyBadge = document.getElementById("vith-history-badge");
-  const dot       = document.getElementById("vith-indicator");
-  const vithCore  = document.getElementById("vith-core");
-  const vizBars   = Array.from(document.querySelectorAll("#capsule-viz .viz-bar"));
+  const capsule        = document.getElementById("vith-capsule");
+  const msgStrip       = document.getElementById("vith-messages");
+  const textInput      = document.getElementById("vith-text-input");
+  const sendBtn        = document.getElementById("vith-send");
+  const micBtn         = document.getElementById("vith-mic");
+  const stopBtn        = document.getElementById("vith-stop-btn");
+  const voiceToggleBtn = document.getElementById("vith-voice-toggle");
+  const voiceChip      = document.getElementById("vith-voice-chip");
+  const historyBtn     = document.getElementById("vith-history-btn");
+  const historyBadge   = document.getElementById("vith-history-badge");
+  const dot            = document.getElementById("vith-indicator");
+  const vithCore       = document.getElementById("vith-core");
+  const vizBars        = Array.from(document.querySelectorAll("#capsule-viz .viz-bar"));
 
   // History modal elements
   const historyModal      = document.getElementById("history-modal-backdrop");
@@ -1018,6 +1020,104 @@ function initVITHPanel() {
       console.log("[VITH] Stop button clicked: stopping active speech.");
       VITHVoice.stopSpeaking();
     });
+  }
+
+  // ── Kokoro Neural TTS Status & Voice Toggle ────────────────
+  function updateVoiceStatusChip(status, message) {
+    if (!voiceChip) return;
+    voiceChip.className = "capsule-voice-chip";
+
+    const isEnabled = window.VITH_TTS ? window.VITH_TTS.voiceEnabled : true;
+    if (!isEnabled) {
+      voiceChip.classList.add("muted");
+      voiceChip.textContent = "[VOICE MUTED]";
+      voiceChip.title = "Voice output is muted. Click speaker button to enable.";
+      return;
+    }
+
+    switch (status) {
+      case "loading":
+        voiceChip.classList.add("loading");
+        const match = message ? message.match(/\d+%/) : null;
+        voiceChip.textContent = match ? `[${match[0]}]` : "[LOADING VOICE...]";
+        voiceChip.title = message || "Downloading Kokoro-82M voice model...";
+        break;
+      case "synthesizing":
+        voiceChip.classList.add("loading");
+        voiceChip.textContent = "[SYNTHESIZING]";
+        voiceChip.title = "Kokoro.js generating speech audio...";
+        break;
+      case "playing":
+        voiceChip.classList.add("speaking");
+        voiceChip.textContent = "[SPEAKING]";
+        voiceChip.title = "VITH speaking response (af_heart)";
+        break;
+      case "fallback":
+        voiceChip.classList.add("fallback");
+        voiceChip.textContent = "[BROWSER TTS]";
+        voiceChip.title = "Browser SpeechSynthesis active";
+        break;
+      case "ready":
+        const dev = window.VITH_TTS && window.VITH_TTS.device ? window.VITH_TTS.device.toUpperCase() : "AF_HEART";
+        voiceChip.textContent = `[${dev}]`;
+        voiceChip.title = message || "Kokoro.js af_heart neural voice ready";
+        break;
+      case "error":
+        voiceChip.classList.add("fallback");
+        voiceChip.textContent = "[SPEECH FALLBACK]";
+        voiceChip.title = message || "Web Speech API fallback active";
+        break;
+      default:
+        voiceChip.textContent = "[AF_HEART]";
+        voiceChip.title = "Kokoro.js Neural Voice (af_heart)";
+    }
+  }
+
+  function syncVoiceToggleUI() {
+    const isEnabled = window.VITH_TTS ? window.VITH_TTS.voiceEnabled : true;
+    if (voiceToggleBtn) {
+      if (isEnabled) {
+        voiceToggleBtn.classList.remove("voice-muted");
+        voiceToggleBtn.title = "Voice Output: Active (Click to mute)";
+      } else {
+        voiceToggleBtn.classList.add("voice-muted");
+        voiceToggleBtn.title = "Voice Output: Muted (Click to unmute)";
+      }
+    }
+    updateVoiceStatusChip(window.VITH_TTS ? window.VITH_TTS.status : "ready");
+  }
+
+  if (voiceToggleBtn) {
+    voiceToggleBtn.addEventListener("click", () => {
+      if (window.VITH_TTS) {
+        window.VITH_TTS.toggleVoice();
+        syncVoiceToggleUI();
+      }
+    });
+  }
+
+  // Preload neural TTS on user intent (capsule hover or focus)
+  const triggerPreload = () => {
+    if (window.VITH_TTS && typeof window.VITH_TTS.preload === "function") {
+      window.VITH_TTS.preload();
+    }
+  };
+  capsule && capsule.addEventListener("mouseenter", triggerPreload, { once: true });
+  textInput && textInput.addEventListener("focus", triggerPreload, { once: true });
+
+  // Hook up TTS status updates
+  const hookTTS = (ttsInstance) => {
+    if (!ttsInstance) return;
+    ttsInstance.onStatusChange = (status, msg) => {
+      updateVoiceStatusChip(status, msg);
+    };
+    syncVoiceToggleUI();
+  };
+
+  if (window.VITH_TTS) {
+    hookTTS(window.VITH_TTS);
+  } else {
+    window.addEventListener("vith-tts-ready", (e) => hookTTS(e.detail || window.VITH_TTS), { once: true });
   }
 
   updateHistoryBadge();
