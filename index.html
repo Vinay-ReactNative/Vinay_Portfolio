@@ -188,11 +188,6 @@
 
         <!-- VITH Holographic Avatar -->
         <div class="vith-holo-container">
-          <div class="reactor-plates reactor-plates-left" aria-label="Portfolio sections">
-            <a class="reactor-plate" href="#skills"><span>⌘</span> SKILLS</a>
-            <a class="reactor-plate" href="#projects"><span>▣</span> PROJECTS</a>
-            <a class="reactor-plate" href="#experience"><span>◈</span> EXPERIENCE</a>
-          </div>
           <div class="vith-beam vith-beam-h"></div>
           <div class="vith-beam vith-beam-v"></div>
           <div class="vith-outer-ring"></div>
@@ -201,11 +196,6 @@
           <div class="vith-core" id="vith-core">
             <div class="vith-core-text">VITH</div>
             <div class="vith-core-sub">VINAY IS<br />THE HERO</div>
-          </div>
-          <div class="reactor-plates reactor-plates-right" aria-label="More portfolio sections">
-            <a class="reactor-plate" href="#about"><span>◎</span> ABOUT</a>
-            <a class="reactor-plate" href="#contact"><span>✉</span> CONTACT</a>
-            <a class="reactor-plate" href="#experience"><span>···</span> MORE</a>
           </div>
 
           <!-- Data readouts -->
@@ -345,6 +335,51 @@
                 <!-- Populated from knowledge base -->
               </div>
             </div>
+
+            <!-- Education (Bachelor's Degree - Integrated into About) -->
+            <div
+              class="holo-card fade-in"
+              style="margin-top: 1rem; padding: 1.25rem 1.5rem"
+              id="about-education-card"
+            >
+              <div
+                class="mono"
+                style="
+                  font-size: 0.6rem;
+                  letter-spacing: 3px;
+                  color: var(--holo-gold);
+                  margin-bottom: 0.5rem;
+                "
+              >
+                // ACADEMIC BACKGROUND
+              </div>
+              <div
+                style="
+                  font-family: var(--font-hud);
+                  font-size: 0.95rem;
+                  font-weight: 700;
+                  color: var(--text-primary);
+                "
+                id="about-degree-text"
+              >
+                Bachelor of Engineering — Aeronautical Engineering
+              </div>
+              <div
+                style="
+                  color: var(--text-dim);
+                  font-size: 0.85rem;
+                  margin-top: 5px;
+                  display: flex;
+                  flex-wrap: wrap;
+                  gap: 8px 12px;
+                  align-items: center;
+                "
+              >
+                <span id="about-institution-text">Karavali Institute of Technology, Mangalore</span>
+                <span class="mono" style="font-size: 0.72rem; color: var(--holo-cyan)" id="about-period-text">2018 — 2022</span>
+                <span class="tech-tag" style="padding: 1px 8px; font-size: 0.68rem; border-color: rgba(0, 212, 255, 0.4)" id="about-grade-text">7.6 CGPA</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -393,16 +428,6 @@
         </div>
         <div class="timeline" id="experience-timeline">
           <!-- Populated by app.js -->
-        </div>
-
-        <!-- Education -->
-        <div style="margin-top: 3rem">
-          <div class="section-eyebrow fade-in" style="margin-bottom: 1.5rem">
-            // EDUCATION
-          </div>
-          <div id="education-container">
-            <!-- Populated from knowledge base -->
-          </div>
         </div>
       </section>
 
@@ -737,17 +762,18 @@
           softEl.appendChild(span);
         });
 
-        // Education
-        const eduEl = document.getElementById("education-container");
-        kb.education.forEach((e) => {
-          eduEl.innerHTML += `
-        <div class="holo-card" style="margin-bottom:1rem">
-          <div class="mono" style="font-size:0.65rem;color:var(--holo-gold);letter-spacing:2px;margin-bottom:4px">${e.period}</div>
-          <div style="font-family:var(--font-hud);font-size:1rem;color:var(--text-primary);font-weight:700">${e.degree}</div>
-          <div style="color:var(--text-dim);font-size:0.9rem;margin-top:4px">${e.institution}</div>
-          ${e.grade ? `<div class="mono" style="font-size:0.65rem;color:var(--holo-cyan);margin-top:6px">${e.grade}</div>` : ""}
-        </div>`;
-        });
+        // Education (Integrated as part of About section)
+        const edu = kb.education && kb.education[0];
+        if (edu) {
+          const degEl = document.getElementById("about-degree-text");
+          const instEl = document.getElementById("about-institution-text");
+          const perEl = document.getElementById("about-period-text");
+          const grdEl = document.getElementById("about-grade-text");
+          if (degEl) degEl.textContent = edu.degree;
+          if (instEl) instEl.textContent = `${edu.institution}, ${edu.location}`;
+          if (perEl) perEl.textContent = edu.period;
+          if (grdEl) grdEl.textContent = edu.grade || "";
+        }
 
         // Certifications
         const certEl = document.getElementById("cert-container");

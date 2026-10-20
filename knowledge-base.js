@@ -471,20 +471,97 @@ const VITH_QA = {
       answer: () => `I am VITH, an AI portfolio assistant designed to help you explore Vinay Kumar's professional work. I can guide you through his React Native expertise, professional experience at Esyasoft and Perisync, featured projects like VINXO, and his contact details.`
     },
 
-    // ── GREETINGS (Conversational, no navigation) ───────────────
+    // ── SPECIFIC GREETINGS: MORNING ────────────────────────────
+    {
+      name: "GREETING_MORNING",
+      weight: 22,
+      section: null,
+      keywords: [
+        "good morning",
+        "morning",
+        "morning vith",
+        "good morning vith"
+      ],
+      answer: () => "Good morning! VITH online and fully operational. How can I assist you with Vinay's portfolio today?"
+    },
+
+    // ── SPECIFIC GREETINGS: AFTERNOON ──────────────────────────
+    {
+      name: "GREETING_AFTERNOON",
+      weight: 22,
+      section: null,
+      keywords: [
+        "good afternoon",
+        "afternoon",
+        "afternoon vith",
+        "good afternoon vith"
+      ],
+      answer: () => "Good afternoon! All systems nominal. What would you like to explore about Vinay's work?"
+    },
+
+    // ── SPECIFIC GREETINGS: EVENING ────────────────────────────
+    {
+      name: "GREETING_EVENING",
+      weight: 22,
+      section: null,
+      keywords: [
+        "good evening",
+        "evening",
+        "evening vith",
+        "good evening vith"
+      ],
+      answer: () => "Good evening! Good to have you here in Vinay's laboratory. Feel free to explore his projects, experience, or skills."
+    },
+
+    // ── SPECIFIC GREETINGS: NIGHT ──────────────────────────────
+    {
+      name: "GREETING_NIGHT",
+      weight: 22,
+      section: null,
+      keywords: [
+        "good night",
+        "goodnight",
+        "good night vith",
+        "goodnight vith"
+      ],
+      answer: () => "Good night! Thank you for exploring Vinay's portfolio. Feel free to return anytime. VITH standing by."
+    },
+
+    // ── STATUS / WELL-BEING QUERY ──────────────────────────────
+    {
+      name: "HOW_ARE_YOU",
+      weight: 22,
+      section: null,
+      keywords: [
+        "how are you",
+        "how are you doing",
+        "how do you do",
+        "how are things",
+        "how are you vith",
+        "how goes it"
+      ],
+      answer: () => "I am functioning at peak performance, all systems nominal! How can I assist you in exploring Vinay's portfolio today?"
+    },
+
+    // ── GENERAL GREETINGS ──────────────────────────────────────
     {
       name: "GREETINGS",
-      weight: 12,
+      weight: 18,
       section: null,
       keywords: [
         "hello",
         "hi",
         "hey",
-        "good morning",
-        "good evening",
-        "good afternoon",
+        "hey vith",
+        "hi vith",
+        "hello vith",
         "greetings",
-        "howdy"
+        "namaste",
+        "yo",
+        "what is up",
+        "whats up",
+        "what's up",
+        "sup"
       ],
       answer: () => {
         const greetings = [
@@ -494,6 +571,110 @@ const VITH_QA = {
         ];
         return greetings[Math.floor(Math.random() * greetings.length)];
       }
+    },
+
+    // ── GRATITUDE & THANKS ─────────────────────────────────────
+    {
+      name: "GRATITUDE",
+      weight: 22,
+      section: null,
+      keywords: [
+        "thanks for helping me out",
+        "thanks for helping",
+        "thanks for your help",
+        "thank you for helping",
+        "thank you so much",
+        "thanks a lot",
+        "thank you very much",
+        "thank you",
+        "thanks",
+        "thanks vith",
+        "thank you vith",
+        "appreciate it",
+        "much appreciated",
+        "grateful",
+        "that helped",
+        "that was helpful",
+        "helpful"
+      ],
+      answer: () => {
+        const replies = [
+          "You are very welcome! Always glad to assist. Feel free to ask if you'd like to inspect any of Vinay's projects, tech stack, or work experience.",
+          "Anytime! It's my pleasure. Let me know what else you'd like to discover about Vinay's engineering journey.",
+          "Happy to help! VITH systems are always at your service."
+        ];
+        return replies[Math.floor(Math.random() * replies.length)];
+      }
+    },
+
+    // ── COMPLIMENTS & APPRECIATION ────────────────────────────
+    {
+      name: "COMPLIMENTS",
+      weight: 20,
+      section: null,
+      keywords: [
+        "you are awesome",
+        "you are great",
+        "you are cool",
+        "you are smart",
+        "awesome",
+        "great job",
+        "good job",
+        "nice job",
+        "well done",
+        "impressive",
+        "cool",
+        "super",
+        "amazing",
+        "you rock",
+        "love this",
+        "i like you"
+      ],
+      answer: () => {
+        const replies = [
+          "Thank you! Vinay built me with a lot of thought and Stark-tech passion. He puts that same engineering dedication into every mobile and AI project he creates.",
+          "Appreciate the kind words! Vinay designed me to showcase his work interactively. Feel free to check out his flagship AI project VINXO or his work at Esyasoft."
+        ];
+        return replies[Math.floor(Math.random() * replies.length)];
+      }
+    },
+
+    // ── FAREWELLS & PARTING ────────────────────────────────────
+    {
+      name: "FAREWELL",
+      weight: 20,
+      section: null,
+      keywords: [
+        "bye",
+        "goodbye",
+        "see you",
+        "see you later",
+        "catch you later",
+        "talk to you later",
+        "have a good day",
+        "have a nice day",
+        "signing off"
+      ],
+      answer: () => "Goodbye! It was a pleasure walking you through Vinay's portfolio. You can connect with him on GitHub or via email anytime. Have a wonderful day!"
+    },
+
+    // ── AFFIRMATIONS & ACKNOWLEDGMENTS ─────────────────────────
+    {
+      name: "AFFIRMATION",
+      weight: 16,
+      section: null,
+      keywords: [
+        "ok",
+        "okay",
+        "alright",
+        "got it",
+        "understood",
+        "sure",
+        "sounds good",
+        "perfect",
+        "yes"
+      ],
+      answer: () => "Understood. What would you like to explore next? We can look at Vinay's projects, technical skills, or his work experience."
     },
 
     // ── ABOUT VINAY (Portfolio Owner Identity) ─────────────────
@@ -745,16 +926,39 @@ const VITH_QA = {
       answer: () => `Vinay's notable achievements include publishing production applications on the Google Play Store and Apple App Store, independently architecting enterprise modules at Esyasoft, integrating three production payment gateways, and creating VINXO, his personal AI companion.`
     },
 
-    // ── EDUCATION (Mapped to Experience) ───────────────────────
+    // ── EDUCATION (Mapped to About Section) ────────────────────
     {
-      name: "EXPERIENCE",
-      weight: 15,
-      section: "experience",
-      targetItem: { type: "education", id: "education-container" },
-      keywords: ["education", "degree", "college", "university", "studied", "study", "academics", "aeronautical", "cgpa"],
+      name: "ABOUT_VINAY",
+      weight: 18,
+      section: "about",
+      targetItem: { type: "education", id: "about-education-card" },
+      keywords: [
+        "education",
+        "what did vinay study",
+        "what did you study",
+        "where did vinay study",
+        "where did you study",
+        "what is his degree",
+        "what is your degree",
+        "degree",
+        "bachelor",
+        "bachelors",
+        "btech",
+        "be",
+        "college",
+        "university",
+        "studied",
+        "study",
+        "academics",
+        "academic background",
+        "aeronautical engineering",
+        "aeronautical",
+        "cgpa",
+        "graduation"
+      ],
       answer: () => {
         const edu = VITH_KNOWLEDGE.education[0];
-        return `Vinay holds a ${edu.degree} from ${edu.institution}, ${edu.location}, graduating in ${edu.period.split("—")[1].trim()} with a CGPA of ${edu.grade}. His aeronautical engineering background brings a strong analytical and problem-solving perspective to mobile development.`;
+        return `Vinay holds a ${edu.degree} from ${edu.institution}, ${edu.location}, graduating with a ${edu.grade}. His aeronautical engineering background brings a strong analytical and problem-solving perspective to mobile software architecture.`;
       }
     },
 
