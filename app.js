@@ -144,6 +144,11 @@ function initIntro() {
   let introStarted = false;
   let vizInterval = null;
 
+  // Pre-fetch intro audio immediately on page load so clicking "INITIALIZE VITH" starts with 0ms delay!
+  if (VITHVoice && VITHVoice.preload) {
+    VITHVoice.preload(introText);
+  }
+
   function startIntroViz() {
     clearInterval(vizInterval);
     vizInterval = setInterval(() => {
@@ -158,30 +163,41 @@ function initIntro() {
     }, 50);
   }
 
-  // Type the intro message
-  let idx = 0;
-  const typeSpeed = 25; // ms per character
-
-  function typeNext() {
+  // Type the intro message in sync with Sarah's actual speech
+  function startSyncedTyping(audio) {
     if (done) return;
-    if (idx <= introText.length) {
-      msgEl.textContent = introText.slice(0, idx);
-      idx++;
-      const pct = (idx / introText.length) * 100;
-      if (progressBar) progressBar.style.width = pct + "%";
-      setTimeout(typeNext, typeSpeed);
-    } else {
-      // Done typing — wait for voice to finish speaking before auto-closing
-      const pollVoiceEnd = () => {
-        if (done) return;
-        if (!VITHVoice.isSpeaking) {
-          setTimeout(closeIntro, 1500);
-        } else {
-          setTimeout(pollVoiceEnd, 500);
-        }
-      };
-      pollVoiceEnd();
+    let idx = 0;
+
+    // Calculate typing speed based on actual audio duration so text and voice finish together
+    const durationMs = (audio && audio.duration && !isNaN(audio.duration) && audio.duration > 2)
+      ? (audio.duration * 1000)
+      : (introText.length * 38);
+
+    // Bounded character delay (between 20ms and 55ms per character)
+    const charDelay = Math.max(20, Math.min(55, Math.floor(durationMs / introText.length)));
+
+    function typeNext() {
+      if (done) return;
+      if (idx <= introText.length) {
+        msgEl.textContent = introText.slice(0, idx);
+        idx++;
+        const pct = (idx / introText.length) * 100;
+        if (progressBar) progressBar.style.width = pct + "%";
+        setTimeout(typeNext, charDelay);
+      } else {
+        // Done typing — wait for voice to complete before auto-closing
+        const pollVoiceEnd = () => {
+          if (done) return;
+          if (!VITHVoice.isSpeaking) {
+            setTimeout(closeIntro, 1200);
+          } else {
+            setTimeout(pollVoiceEnd, 300);
+          }
+        };
+        pollVoiceEnd();
+      }
     }
+    typeNext();
   }
 
   function startIntro() {
@@ -204,18 +220,43 @@ function initIntro() {
     }
 
     if (startBtn) {
-      startBtn.classList.add("fade-out");
-      setTimeout(() => {
-        if (startBtn) startBtn.style.display = "none";
-      }, 400);
+      startBtn.innerHTML = `
+        <span class="btn-glow-pulse"></span>
+        <span class="start-btn-icon">⚡</span>
+        <span class="start-btn-text">SYNCHRONIZING VITH AUDIO...</span>
+      `;
+      startBtn.classList.add("loading");
     }
 
-    // Start intro visualizer pulsing
-    startIntroViz();
+    // Speak the intro out loud with synchronized typing
+    VITHVoice.speak(introText, {
+      forceSingle: true, // Use the full intro track cached in backend
+      onPlay: (audio) => {
+        // Audio has begun playing!
+        if (startBtn) {
+          startBtn.classList.add("fade-out");
+          setTimeout(() => {
+            if (startBtn) startBtn.style.display = "none";
+          }, 350);
+        }
+        startIntroViz();
+        startSyncedTyping(audio);
+      }
+    });
 
-    // Speak the intro out loud
-    VITHVoice.speak(introText);
-    typeNext();
+    // Safety fallback: if audio fails or is delayed past 4.5s, start typing anyway
+    setTimeout(() => {
+      if (!done && msgEl.textContent.length === 0) {
+        if (startBtn) {
+          startBtn.classList.add("fade-out");
+          setTimeout(() => {
+            if (startBtn) startBtn.style.display = "none";
+          }, 350);
+        }
+        startIntroViz();
+        startSyncedTyping(null);
+      }
+    }, 4500);
   }
 
   // Click on start button, or click anywhere on the overlay, or press any key

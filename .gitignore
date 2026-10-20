@@ -1,5 +1,6 @@
 # Dependencies
 node_modules/
+.tts-cache/
 
 # OS and Editor metadata
 .DS_Store
