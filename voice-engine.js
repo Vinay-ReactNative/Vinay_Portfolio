@@ -264,11 +264,12 @@ const VITHVoice = {
 
     // Primary: Kokoro Neural TTS (af_heart via Hugging Face Cloud)
     if (typeof window !== "undefined" && window.VITH_TTS) {
+      console.log("%c[VITH Voice Engine]%c Delegating speech to window.VITH_TTS...", "color: #00d4ff", "color: inherit");
       try {
         await window.VITH_TTS.speak(text);
         return;
       } catch (err) {
-        console.warn("[VITH Voice] Kokoro TTS synthesis error, using Web Speech fallback:", err);
+        console.warn("[VITH Voice Engine] Kokoro TTS synthesis error, using Web Speech fallback:", err);
       }
     }
 
