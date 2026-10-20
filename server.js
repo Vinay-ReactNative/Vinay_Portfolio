@@ -10,7 +10,7 @@ const path = require("path");
 
 const PORT = process.env.PORT || 5050;
 const ROOT = __dirname;
-const FISH_API_KEY = process.env.FISH_API_KEY;
+const FISH_API_KEY = process.env.FISH_API_KEY || "sk-fish-Ob7JINBI5EPoxos6h-rVa1gKjoHy9uReHh58Ku47ODk";
 
 const MIME_TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -78,11 +78,11 @@ const server = http.createServer(async (req, res) => {
         headers: {
           "Authorization": "Bearer " + FISH_API_KEY,
           "Content-Type": "application/json",
-          "model": "s2-pro"
+          "model": payload.model || "s2.1-pro-free"
         },
         body: JSON.stringify({
           text: payload.text,
-          reference_id: payload.reference_id,
+          reference_id: payload.reference_id || "933563129e564b19a115bedd57b7406a",
           format: payload.format || "mp3"
         })
       });

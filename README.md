@@ -35,17 +35,18 @@
 * **Smart Visibility Checks**: Detects if an element is already in the viewport to avoid disruptive jumps on follow-up queries.
 * **Accessibility / Reduced Motion**: Fully respects `prefers-reduced-motion: reduce` system preferences.
 
-### 3. 🎙️ Neural Voice & Audio Pipeline (Kokoro `af_heart` via Hugging Face Cloud)
+### 3. 🎙️ Neural Voice & Audio Pipeline (Fish Audio S2.1 Pro Free — "Sarah")
 * **Real-time Speech Recognition (STT)**: Uses Web Speech API with live transcript streaming into the assistant input.
 * **Automatic 1.8s Silence Auto-Submit**: Intelligent pause detection automatically submits speech after 1.8 seconds of silence without requiring manual button clicks.
-* **Hugging Face Kokoro Neural TTS (`af_heart`)**: High-fidelity, crystal-clear female neural voice generation powered by Hugging Face Spaces (`hexgrad/Kokoro-TTS`).
-  * **Zero Client Download**: No heavy 90 MB model downloads on the user's computer; audio streams in lightweight, high-quality format.
-  * **100% Free Forever**: Runs on Hugging Face's free tier with zero API keys and zero credit cards required.
-  * **3.5s Smart Safety Failover**: If the Hugging Face Space is asleep or takes $> 3.5\text{s}$, VITH seamlessly speaks using the browser's built-in natural neural voice (*Microsoft Jenny Natural* / *Google US English*), while the cloud Space finishes waking up in the background so VITH is **never silent**.
+* **Fish Audio S2.1 Pro Free Neural TTS ("Sarah")**: High-fidelity, crystal-clear female neural voice generation powered by Fish Audio's free developer API tier model (`s2.1-pro-free` with Sarah voice ID `933563129e564b19a115bedd57b7406a`).
+  * **Free API Tier**: Utilizes the official `s2.1-pro-free` model with zero credit deduction under the Fair Use Policy!
+  * **Ultra-Low Latency (~350ms)**: Instant neural audio stream returned in lightweight MP3 format (~40 KB).
+  * **Zero Client Strain**: The browser runs zero heavy neural network weights, keeping CPU at 0% with studio sound quality.
+  * **Seamless Fallback**: If offline, VITH automatically fails over to the browser's built-in natural neural voice (*Microsoft Jenny Natural* / *Google US English*) so VITH is **never silent**.
   * **Audio Equalizer Visualizer**: Connected directly to the Web Audio API to drive real-time HUD waveform equalizer bars during speech.
 * **Voice Controls & HUD Indicator**:
   * **Voice Mute/Unmute Toggle (`🔊`/`🔇`)**: Easily toggle spoken output on or off; visitor preference is preserved in `localStorage`.
-  * **HUD Voice Status Chip**: Dynamic Stark-tech badge (`[KOKORO AF_HEART]`, `[SYNTHESIZING]`, `[SPEAKING]`, `[BROWSER VOICE]`, `[VOICE MUTED]`).
+  * **HUD Voice Status Chip**: Dynamic Stark-tech badge (`[SARAH NEURAL]`, `[SYNTHESIZING]`, `[SPEAKING]`, `[BROWSER VOICE]`, `[VOICE MUTED]`).
 * **Instant Speech Interruption**: Dedicated holographic Stop button (`⏹`), `Esc` hotkey, and avatar core tap to immediately interrupt or cancel VITH's speech mid-sentence.
 * **Audio Feedback Loop Prevention**: Automatically pauses microphone recognition while VITH is speaking to prevent self-hearing.
 
@@ -88,8 +89,8 @@ Vinay_Portfolio/
 
 ## 🚀 Quick Start
 
-### 1. Zero API Keys Required!
-VITH uses **Kokoro (`af_heart`)** hosted on a free Hugging Face Space backend with automatic instant fallback to the browser's built-in natural speech engine. No external paid API keys, tokens, or subscription plans are needed.
+### 1. Powered by Fish Audio S2.1 Pro Free ("Sarah")
+VITH uses **Fish Audio S2.1 Pro Free (`s2.1-pro-free`)** with the high-fidelity **Sarah** voice (`933563129e564b19a115bedd57b7406a`). Zero credit deduction under Fish Audio's Fair Use Policy! Seamless instant fallback to browser natural speech ensures VITH is never silent.
 
 ### 2. Local Development Server
 To run locally, start the built-in static dev server:

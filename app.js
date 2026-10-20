@@ -1022,12 +1022,12 @@ function initVITHPanel() {
     });
   }
 
-  // ── Kokoro Neural TTS Status & Voice Toggle ────────────────
+  // ── Fish Audio Neural TTS Status & Voice Toggle ─────────────
   function updateVoiceStatusChip(status, message) {
     if (!voiceChip) return;
     voiceChip.className = "capsule-voice-chip";
 
-    const isEnabled = window.VITH_TTS ? window.VITH_TTS.voiceEnabled : true;
+    const isEnabled = VITHVoice.voiceEnabled;
     if (!isEnabled) {
       voiceChip.classList.add("muted");
       voiceChip.textContent = "[VOICE MUTED]";
@@ -1036,16 +1036,15 @@ function initVITHPanel() {
     }
 
     switch (status) {
-      case "loading":
       case "synthesizing":
         voiceChip.classList.add("loading");
         voiceChip.textContent = "[SYNTHESIZING]";
-        voiceChip.title = "Kokoro AI generating speech via Hugging Face...";
+        voiceChip.title = "Fish Audio S2.1 Pro generating speech...";
         break;
-      case "playing":
+      case "speaking":
         voiceChip.classList.add("speaking");
         voiceChip.textContent = "[SPEAKING]";
-        voiceChip.title = "VITH speaking response (Kokoro af_heart)";
+        voiceChip.title = "VITH speaking response (Sarah)";
         break;
       case "fallback":
         voiceChip.classList.add("fallback");
@@ -1053,8 +1052,8 @@ function initVITHPanel() {
         voiceChip.title = "Natural Browser Voice Active";
         break;
       case "ready":
-        voiceChip.textContent = "[KOKORO AF_HEART]";
-        voiceChip.title = "Kokoro Neural Voice (af_heart) Ready";
+        voiceChip.textContent = "[SARAH NEURAL]";
+        voiceChip.title = "Fish Audio S2.1 Pro Free (Sarah) Ready";
         break;
       case "error":
         voiceChip.classList.add("fallback");
@@ -1062,13 +1061,13 @@ function initVITHPanel() {
         voiceChip.title = message || "Voice engine in standby";
         break;
       default:
-        voiceChip.textContent = "[KOKORO AF_HEART]";
-        voiceChip.title = "Kokoro Neural Voice (af_heart)";
+        voiceChip.textContent = "[SARAH NEURAL]";
+        voiceChip.title = "Fish Audio S2.1 Pro Free (Sarah)";
     }
   }
 
   function syncVoiceToggleUI() {
-    const isEnabled = window.VITH_TTS ? window.VITH_TTS.voiceEnabled : true;
+    const isEnabled = VITHVoice.voiceEnabled;
     if (voiceToggleBtn) {
       if (isEnabled) {
         voiceToggleBtn.classList.remove("voice-muted");
@@ -1078,41 +1077,20 @@ function initVITHPanel() {
         voiceToggleBtn.title = "Voice Output: Muted (Click to unmute)";
       }
     }
-    updateVoiceStatusChip(window.VITH_TTS ? window.VITH_TTS.status : "ready");
+    updateVoiceStatusChip(VITHVoice.status || "ready");
   }
 
   if (voiceToggleBtn) {
     voiceToggleBtn.addEventListener("click", () => {
-      if (window.VITH_TTS) {
-        window.VITH_TTS.toggleVoice();
-        syncVoiceToggleUI();
-      }
+      VITHVoice.toggleVoice();
+      syncVoiceToggleUI();
     });
   }
 
-  // Preload neural TTS on user intent (capsule hover or focus)
-  const triggerPreload = () => {
-    if (window.VITH_TTS && typeof window.VITH_TTS.preload === "function") {
-      window.VITH_TTS.preload();
-    }
+  VITHVoice.onStatusChange = (status, msg) => {
+    updateVoiceStatusChip(status, msg);
   };
-  capsule && capsule.addEventListener("mouseenter", triggerPreload, { once: true });
-  textInput && textInput.addEventListener("focus", triggerPreload, { once: true });
-
-  // Hook up TTS status updates
-  const hookTTS = (ttsInstance) => {
-    if (!ttsInstance) return;
-    ttsInstance.onStatusChange = (status, msg) => {
-      updateVoiceStatusChip(status, msg);
-    };
-    syncVoiceToggleUI();
-  };
-
-  if (window.VITH_TTS) {
-    hookTTS(window.VITH_TTS);
-  } else {
-    window.addEventListener("vith-tts-ready", (e) => hookTTS(e.detail || window.VITH_TTS), { once: true });
-  }
+  syncVoiceToggleUI();
 
   updateHistoryBadge();
 
