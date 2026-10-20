@@ -101,6 +101,24 @@ function initParticles() {
 function initNavbar() {
   const nav = document.getElementById("navbar");
   const links = document.querySelectorAll(".nav-links a");
+  const toggle = document.getElementById("nav-toggle");
+
+  function setNavOpen(isOpen) {
+    nav.classList.toggle("nav-open", isOpen);
+    toggle?.setAttribute("aria-expanded", String(isOpen));
+    toggle?.setAttribute(
+      "aria-label",
+      isOpen ? "Close navigation menu" : "Open navigation menu"
+    );
+  }
+
+  toggle?.addEventListener("click", () => {
+    setNavOpen(toggle.getAttribute("aria-expanded") !== "true");
+  });
+
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape") setNavOpen(false);
+  });
 
   window.addEventListener("scroll", () => {
     nav.style.background = window.scrollY > 50
@@ -123,6 +141,7 @@ function initNavbar() {
     link.addEventListener("click", e => {
       e.preventDefault();
       const target = document.querySelector(link.getAttribute("href"));
+      setNavOpen(false);
       if (target) target.scrollIntoView({ behavior: "smooth" });
     });
   });
@@ -1084,8 +1103,8 @@ function initVITHPanel() {
         voiceChip.title = "Natural Browser Voice Active";
         break;
       case "ready":
-        voiceChip.textContent = "[SARAH NEURAL]";
-        voiceChip.title = "Fish Audio S2.1 Pro Free (Sarah) Ready";
+        voiceChip.textContent = "[V.O.X]";
+        voiceChip.title = "V.O.X neural voice ready";
         break;
       case "error":
         voiceChip.classList.add("fallback");
@@ -1093,14 +1112,15 @@ function initVITHPanel() {
         voiceChip.title = message || "Voice engine in standby";
         break;
       default:
-        voiceChip.textContent = "[SARAH NEURAL]";
-        voiceChip.title = "Fish Audio S2.1 Pro Free (Sarah)";
+        voiceChip.textContent = "[V.O.X]";
+        voiceChip.title = "V.O.X neural voice";
     }
   }
 
   function syncVoiceToggleUI() {
     const isEnabled = VITHVoice.voiceEnabled;
     if (voiceToggleBtn) {
+      voiceToggleBtn.setAttribute("aria-pressed", String(isEnabled));
       if (isEnabled) {
         voiceToggleBtn.classList.remove("voice-muted");
         voiceToggleBtn.title = "Voice Output: Active (Click to mute)";
@@ -1281,6 +1301,9 @@ function initVITHPanel() {
   VITHVoice.onError = (error) => {
     console.warn("[VITH App: onError] STT error received:", error);
     wantsToListen = false;
+    setMicButtonState("idle");
+    setStatus(null);
+    startViz(false);
     const message = error.error === "network"
       ? `<strong>⚠ Browser speech service unavailable</strong><br>Open this page in Chrome or Edge to use voice input.`
       : `<strong>⚠ Voice input failed</strong><br>Please try again or type your question.`;

@@ -76,7 +76,19 @@
     <!-- ── NAVIGATION ────────────────────────────────────────── -->
     <nav id="navbar">
       <div class="nav-logo">V I T H</div>
-      <ul class="nav-links">
+      <button
+        class="nav-toggle"
+        id="nav-toggle"
+        type="button"
+        aria-expanded="false"
+        aria-controls="nav-links"
+        aria-label="Open navigation menu"
+      >
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <ul class="nav-links" id="nav-links">
         <li><a href="#hero">Home</a></li>
         <li><a href="#about">About</a></li>
         <li><a href="#skills">Skills</a></li>
@@ -241,6 +253,18 @@
               <!-- Populated from knowledge base -->
             </p>
 
+            <div class="holo-card about-education-card fade-in" id="about-education-card">
+              <div class="about-education-label">// ACADEMIC BACKGROUND</div>
+              <div class="about-education-degree" id="about-degree-text">
+                Bachelor of Engineering — Aeronautical Engineering
+              </div>
+              <div class="about-education-details">
+                <span id="about-institution-text">Karavali Institute of Technology, Mangalore</span>
+                <span class="about-education-period" id="about-period-text">2018 — 2022</span>
+                <span class="tech-tag about-education-grade" id="about-grade-text">7.6 CGPA</span>
+              </div>
+            </div>
+
             <div
               style="
                 margin-top: 2rem;
@@ -333,51 +357,6 @@
                 id="hobbies-container"
               >
                 <!-- Populated from knowledge base -->
-              </div>
-            </div>
-
-            <!-- Education (Bachelor's Degree - Integrated into About) -->
-            <div
-              class="holo-card fade-in"
-              style="margin-top: 1rem; padding: 1.25rem 1.5rem"
-              id="about-education-card"
-            >
-              <div
-                class="mono"
-                style="
-                  font-size: 0.6rem;
-                  letter-spacing: 3px;
-                  color: var(--holo-gold);
-                  margin-bottom: 0.5rem;
-                "
-              >
-                // ACADEMIC BACKGROUND
-              </div>
-              <div
-                style="
-                  font-family: var(--font-hud);
-                  font-size: 0.95rem;
-                  font-weight: 700;
-                  color: var(--text-primary);
-                "
-                id="about-degree-text"
-              >
-                Bachelor of Engineering — Aeronautical Engineering
-              </div>
-              <div
-                style="
-                  color: var(--text-dim);
-                  font-size: 0.85rem;
-                  margin-top: 5px;
-                  display: flex;
-                  flex-wrap: wrap;
-                  gap: 8px 12px;
-                  align-items: center;
-                "
-              >
-                <span id="about-institution-text">Karavali Institute of Technology, Mangalore</span>
-                <span class="mono" style="font-size: 0.72rem; color: var(--holo-cyan)" id="about-period-text">2018 — 2022</span>
-                <span class="tech-tag" style="padding: 1px 8px; font-size: 0.68rem; border-color: rgba(0, 212, 255, 0.4)" id="about-grade-text">7.6 CGPA</span>
               </div>
             </div>
           </div>
@@ -491,7 +470,7 @@
       <div class="capsule-brand">
         <div class="capsule-dot" id="vith-indicator"></div>
         <span class="capsule-label">VITH</span>
-        <span class="capsule-voice-chip" id="vith-voice-chip" title="Fish Audio S2.1 Pro Free (Sarah)">[SARAH NEURAL]</span>
+        <span class="capsule-voice-chip" id="vith-voice-chip" title="V.O.X neural voice ready">[V.O.X]</span>
       </div>
 
       <!-- Audio waveform visualizer -->
@@ -514,100 +493,97 @@
         autocomplete="off"
       />
 
-      <!-- Voice Mute/Unmute Toggle -->
-      <button
-        class="capsule-btn capsule-voice-toggle"
-        id="vith-voice-toggle"
-        title="Voice Output: Active (Click to mute)"
-        aria-label="Toggle VITH Voice"
-      >
-        <svg class="voice-icon-on" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-          <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-        </svg>
-        <svg class="voice-icon-off hidden" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-          <line x1="23" y1="9" x2="17" y2="15"></line>
-          <line x1="17" y1="9" x2="23" y2="15"></line>
-        </svg>
-      </button>
+      <div class="capsule-control-group capsule-voice-controls" aria-label="Voice controls">
+        <!-- Microphone / stop control -->
+        <button
+          class="capsule-btn capsule-mic"
+          id="vith-mic"
+          title="Speak to Vith"
+          aria-label="Start voice input"
+          aria-pressed="false"
+        >
+          <svg
+            class="mic-icon"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+            <line x1="12" y1="19" x2="12" y2="23" />
+            <line x1="8" y1="23" x2="16" y2="23" />
+          </svg>
+          <svg class="stop-icon hidden" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <rect x="5" y="5" width="14" height="14" rx="2" ry="2" />
+          </svg>
+        </button>
 
-      <!-- Microphone / stop control -->
-      <button
-        class="capsule-btn capsule-mic"
-        id="vith-mic"
-        title="Speak to Vith"
-        aria-label="Start voice input"
-        aria-pressed="false"
-      >
-        <svg
-          class="mic-icon"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
+        <!-- Voice output mute/unmute -->
+        <button
+          class="capsule-btn capsule-voice-toggle"
+          id="vith-voice-toggle"
+          title="Voice Output: Active (Click to mute)"
+          aria-label="Toggle VITH voice output"
         >
-          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
-          <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-          <line x1="12" y1="19" x2="12" y2="23" />
-          <line x1="8" y1="23" x2="16" y2="23" />
-        </svg>
-        <svg
-          class="stop-icon hidden"
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="currentColor"
-          aria-hidden="true"
-        >
-          <rect x="5" y="5" width="14" height="14" rx="2" ry="2" />
-        </svg>
-      </button>
+          <svg class="voice-icon-on" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          </svg>
+          <svg class="voice-icon-off hidden" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <line x1="23" y1="9" x2="17" y2="15"></line>
+            <line x1="17" y1="9" x2="23" y2="15"></line>
+          </svg>
+        </button>
+      </div>
 
-      <!-- Send button -->
-      <button class="capsule-btn capsule-send" id="vith-send" title="Send">
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <line x1="22" y1="2" x2="11" y2="13" />
-          <polygon points="22 2 15 22 11 13 2 9 22 2" />
-        </svg>
-      </button>
+      <div class="capsule-control-group capsule-message-controls" aria-label="Message actions">
+        <!-- Send button -->
+        <button class="capsule-btn capsule-send" id="vith-send" title="Send">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <line x1="22" y1="2" x2="11" y2="13" />
+            <polygon points="22 2 15 22 11 13 2 9 22 2" />
+          </svg>
+        </button>
 
-      <!-- History button -->
-      <button
-        class="capsule-btn capsule-history"
-        id="vith-history-btn"
-        title="View Conversation History"
-        aria-label="Conversation History"
-      >
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
+        <!-- History button -->
+        <button
+          class="capsule-btn capsule-history"
+          id="vith-history-btn"
+          title="View Conversation History"
+          aria-label="Conversation History"
         >
-          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-          <path d="M3 3v5h5" />
-          <polyline points="12 7 12 12 15 15" />
-        </svg>
-        <span class="capsule-history-badge hidden" id="vith-history-badge">0</span>
-      </button>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+            <path d="M3 3v5h5" />
+            <polyline points="12 7 12 12 15 15" />
+          </svg>
+          <span class="capsule-history-badge hidden" id="vith-history-badge">0</span>
+        </button>
+      </div>
     </div>
 
     <!-- ══════════════════════════════════════════════════════════
