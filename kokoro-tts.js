@@ -1,23 +1,24 @@
 /**
- * VITH Neural Voice System — Kokoro.js TTS Integration
+ * VITH Neural Voice System — Kokoro TTS via Hugging Face Cloud
  * Voice: af_heart (Friendly, intelligent, confident female AI assistant)
- * Model: onnx-community/Kokoro-82M-v1.0-ONNX (q8 precision, WebGPU with WASM fallback)
+ * Engine: Hugging Face Spaces (hexgrad/Kokoro-TTS) with instant Natural Browser Voice Fallback
+ * Zero client model download, zero client CPU strain, 100% free with zero API keys required.
  */
 
-import { KokoroTTS } from "https://cdn.jsdelivr.net/npm/kokoro-js@1.2.1/+esm";
+import { Client } from "https://cdn.jsdelivr.net/npm/@gradio/client@1.9.1/+esm";
 
 class VITHNeuralTTS {
   constructor() {
-    this.modelId = "onnx-community/Kokoro-82M-v1.0-ONNX";
+    // Hugging Face Space configuration
+    this.hfSpace = "hexgrad/Kokoro-TTS";
     this.voice = "af_heart";
-    this.dtype = "q8";
+    this.speed = 1.05;
 
     // Engine state
-    this.tts = null;
-    this.status = "uninitialized"; // uninitialized | loading | ready | synthesizing | playing | error | fallback
-    this.statusMessage = "Voice engine in standby";
-    this.initPromise = null;
-    this.device = null; // "webgpu" | "wasm"
+    this.client = null;
+    this.status = "ready"; // ready | synthesizing | playing | fallback | muted | error
+    this.statusMessage = "Kokoro Neural Voice (af_heart) Ready";
+    this.clientConnecting = null;
 
     // Playback state
     this.currentAudio = null;
@@ -40,36 +41,37 @@ class VITHNeuralTTS {
 
     // Callbacks
     this.onStatusChange = null;
-    this.onProgress = null;
     this.onStart = null;
     this.onEnd = null;
     this.onError = null;
   }
 
-  /**
-   * Check if the neural model is loaded and ready
-   */
   isReady() {
-    return this.status === "ready" || (this.tts !== null && this.status !== "loading");
+    return this.status !== "error" && this.voiceEnabled;
   }
 
-  /**
-   * Get current detailed status
-   */
   getStatus() {
     return {
       status: this.status,
       message: this.statusMessage,
       voice: this.voice,
-      device: this.device,
-      model: this.modelId,
+      space: this.hfSpace,
       voiceEnabled: this.voiceEnabled
     };
   }
 
-  /**
-   * Enable or disable voice synthesis output
-   */
+  _setStatus(status, message = "") {
+    this.status = status;
+    this.statusMessage = message;
+    if (this.onStatusChange) {
+      try {
+        this.onStatusChange(status, message);
+      } catch (e) {
+        console.warn("[VITH TTS] onStatusChange error:", e);
+      }
+    }
+  }
+
   setVoiceEnabled(enabled) {
     this.voiceEnabled = Boolean(enabled);
     try {
@@ -80,173 +82,64 @@ class VITHNeuralTTS {
       this.stop();
       this._setStatus("muted", "Voice output muted");
     } else {
-      this._setStatus(
-        this.isReady() ? "ready" : "uninitialized",
-        this.isReady() ? `Voice ready (${this.voice} on ${this.device ? this.device.toUpperCase() : "standby"})` : "Voice engine in standby"
-      );
+      this._setStatus("ready", `Voice ready (${this.voice} via HuggingFace)`);
     }
     return this.voiceEnabled;
   }
 
-  /**
-   * Toggle voice synthesis output on/off
-   */
   toggleVoice() {
     return this.setVoiceEnabled(!this.voiceEnabled);
   }
 
   /**
-   * Preload model in background without blocking initial page render
+   * Preload connection to Hugging Face space in background
    */
   preload() {
-    if (this.tts || this.initPromise) return;
-    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
-      window.requestIdleCallback(() => {
-        this.initialize().catch(err => console.warn("[VITH TTS] Background preload note:", err.message));
-      }, { timeout: 3500 });
-    } else {
-      setTimeout(() => {
-        this.initialize().catch(err => console.warn("[VITH TTS] Background preload note:", err.message));
-      }, 2000);
-    }
-  }
-
-  /**
-   * Update internal status and trigger listeners
-   */
-  _setStatus(status, message = "") {
-    this.status = status;
-    this.statusMessage = message;
-    if (this.onStatusChange) {
+    if (this.client || this.clientConnecting) return;
+    this.clientConnecting = (async () => {
       try {
-        this.onStatusChange(status, message);
+        console.log(`[VITH TTS] Preconnecting to Hugging Face Space: ${this.hfSpace}...`);
+        this.client = await Client.connect(this.hfSpace);
+        console.log("[VITH TTS] Hugging Face Kokoro connection established!");
       } catch (e) {
-        console.warn("[VITH TTS] onStatusChange callback error:", e);
-      }
-    }
-  }
-
-  /**
-   * Initialize the Kokoro model once per session.
-   * Handles WebGPU with automatic WASM fallback and progress tracking.
-   */
-  async initialize() {
-    // If already ready, return existing instance
-    if (this.tts) return this.tts;
-
-    // Prevent duplicate simultaneous initializations
-    if (this.initPromise) return this.initPromise;
-
-    this.initPromise = (async () => {
-      this._setStatus("loading", "Preparing VITH's voice...");
-
-      const progressCallback = (progress) => {
-        if (!progress) return;
-        let progressDetail = "";
-
-        if (progress.status === "initiate") {
-          progressDetail = `Downloading ${progress.file || "voice model"}...`;
-          this._setStatus("loading", progressDetail);
-        } else if (progress.status === "progress") {
-          const pct = typeof progress.progress === "number" ? Math.round(progress.progress) : null;
-          progressDetail = pct !== null
-            ? `Downloading voice model: ${pct}%`
-            : `Downloading voice model...`;
-          this._setStatus("loading", progressDetail);
-          if (this.onProgress) {
-            try { this.onProgress(progress); } catch (e) {}
-          }
-        } else if (progress.status === "done") {
-          progressDetail = `Loaded ${progress.file || "model chunk"}`;
-          this._setStatus("loading", progressDetail);
-        } else if (progress.status === "ready") {
-          this._setStatus("loading", "Initializing speech engine...");
-        }
-      };
-
-      // Preferred device: WebGPU with graceful fallback to WASM
-      const hasWebGpu = typeof navigator !== "undefined" && Boolean(navigator.gpu);
-      const preferredDevice = hasWebGpu ? "webgpu" : "wasm";
-
-      console.log(`[VITH TTS] Initializing Kokoro TTS (Model: ${this.modelId}, dtype: ${this.dtype}, preferred device: ${preferredDevice})...`);
-
-      try {
-        // Attempt 1: WebGPU if available
-        if (preferredDevice === "webgpu") {
-          try {
-            this.tts = await KokoroTTS.from_pretrained(this.modelId, {
-              dtype: this.dtype,
-              device: "webgpu",
-              progress_callback: progressCallback
-            });
-            this.device = "webgpu";
-            console.log("%c[VITH TTS]%c Successfully initialized on WebGPU!", "color: #00ff88; font-weight: bold", "color: inherit");
-          } catch (gpuErr) {
-            console.warn("[VITH TTS] WebGPU initialization failed, falling back to WASM:", gpuErr.message || gpuErr);
-            this._setStatus("loading", "WebGPU unavailable, switching to WASM engine...");
-          }
-        }
-
-        // Attempt 2: WASM fallback
-        if (!this.tts) {
-          this.tts = await KokoroTTS.from_pretrained(this.modelId, {
-            dtype: this.dtype,
-            device: "wasm",
-            progress_callback: progressCallback
-          });
-          this.device = "wasm";
-          console.log("%c[VITH TTS]%c Successfully initialized on WASM!", "color: #00d4ff; font-weight: bold", "color: inherit");
-        }
-
-        this._setStatus("ready", `Voice ready (af_heart on ${this.device.toUpperCase()})`);
-        return this.tts;
-      } catch (err) {
-        console.error("[VITH TTS] Failed to initialize Kokoro TTS:", err);
-        this.tts = null;
-        this.initPromise = null;
-        this._setStatus("error", "Neural voice unavailable. Falling back to browser speech.");
-        if (this.onError) {
-          try { this.onError(err); } catch (e) {}
-        }
-        throw err;
+        console.warn("[VITH TTS] Preconnect note (will retry on speak):", e.message || e);
+      } finally {
+        this.clientConnecting = null;
       }
     })();
-
-    return this.initPromise;
   }
 
   /**
    * Preprocess text for natural speech synthesis
-   * Strips markdown, URLs, code blocks, and phoneticizes acronyms.
    */
   preprocessText(rawText) {
     if (!rawText) return "";
 
     let t = String(rawText);
 
-    // 1. Remove markdown links, keep label: [Vinay](https://...) -> Vinay
+    // 1. Remove markdown links, keep label
     t = t.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1");
 
     // 2. Remove raw URLs
     t = t.replace(/https?:\/\/[^\s]+/g, "link");
 
     // 3. Remove markdown headers, bold, italics, code fences
-    t = t.replace(/```[\s\S]*?```/g, " "); // code blocks
-    t = t.replace(/`([^`]+)`/g, "$1");     // inline code
-    t = t.replace(/^#{1,6}\s+/gm, "");     // headers
-    t = t.replace(/\*\*([^*]+)\*\*/g, "$1"); // bold
-    t = t.replace(/\*([^*]+)\*/g, "$1");     // italic
-    t = t.replace(/__([^_]+)__/g, "$1");     // bold
-    t = t.replace(/_([^_]+)_/g, "$1");       // italic
-    t = t.replace(/^[•*▸-]\s+/gm, "");       // bullet points
+    t = t.replace(/```[\s\S]*?```/g, " ");
+    t = t.replace(/`([^`]+)`/g, "$1");
+    t = t.replace(/^#{1,6}\s+/gm, "");
+    t = t.replace(/\*\*([^*]+)\*\*/g, "$1");
+    t = t.replace(/\*([^*]+)\*/g, "$1");
+    t = t.replace(/__([^_]+)__/g, "$1");
+    t = t.replace(/_([^_]+)_/g, "$1");
+    t = t.replace(/^[•*▸-]\s+/gm, "");
 
     // 4. Remove HTML tags
     t = t.replace(/<[^>]*>/g, "");
 
     // 5. Phonetic adjustments & acronym pronunciations
-    t = t.replace(/\bVITH\b/g, "Vith")          // Say "Vith" instead of V-I-T-H
-         .replace(/\bEDITH\b/g, "Edith")        // Say "Edith"
-         .replace(/\bVINXO\b/g, "Vinxo")        // Say "Vinxo"
+    t = t.replace(/\bVITH\b/g, "Vith")
+         .replace(/\bEDITH\b/g, "Edith")
+         .replace(/\bVINXO\b/g, "Vinxo")
          .replace(/\bWFM\b/g, "Workforce Management")
          .replace(/\bAI\b/g, "A.I.")
          .replace(/\bSTT\b/g, "Speech to Text")
@@ -268,8 +161,8 @@ class VITHNeuralTTS {
   }
 
   /**
-   * Synthesize and speak text using Kokoro af_heart
-   * Automatically interrupts any currently playing audio.
+   * Synthesize and speak text using Kokoro af_heart via Hugging Face
+   * Automatically falls back to high-quality browser speech if HF is asleep/slow (>3.5s).
    */
   async speak(text) {
     if (!text || !this.voiceEnabled) {
@@ -277,8 +170,8 @@ class VITHNeuralTTS {
       return;
     }
 
-    // Stop active audio immediately
-    this.stop();
+    // Stop active audio without triggering onEnd callback
+    this._stopActiveAudio();
 
     const speechText = this.preprocessText(text);
     if (!speechText) {
@@ -286,50 +179,31 @@ class VITHNeuralTTS {
       return;
     }
 
-    // Request ID token to prevent race conditions & out-of-order playback
     const requestId = ++this.activeRequestId;
 
     try {
-      // Lazy load model if not yet loaded
-      if (!this.tts) {
-        await this.initialize();
-      }
+      this._setStatus("synthesizing", "Generating Kokoro AI voice...");
+      console.log(`[VITH TTS] Synthesizing with Kokoro af_heart: "${speechText.slice(0, 60)}..."`);
 
-      // If a newer request was triggered while loading, cancel this one
-      if (requestId !== this.activeRequestId) {
-        return;
-      }
+      // Attempt Hugging Face Kokoro synthesis with 3.5s timeout
+      const audioUrl = await this._synthesizeWithTimeout(speechText, requestId, 3500);
 
-      this._setStatus("synthesizing", "Synthesizing voice response...");
-      console.log(`[VITH TTS] Synthesizing with af_heart (${this.device}): "${speechText.slice(0, 60)}..."`);
+      // Check if user clicked stop or asked another question while synthesizing
+      if (requestId !== this.activeRequestId) return;
 
-      const audioResult = await this.tts.generate(speechText, {
-        voice: this.voice,
-        speed: 1.05
-      });
-
-      // Stale check
-      if (requestId !== this.activeRequestId) {
-        return;
-      }
-
-      const audioBlob = audioResult.toBlob();
-      const audioUrl = URL.createObjectURL(audioBlob);
       this.currentAudioUrl = audioUrl;
-
       const audioEl = new Audio(audioUrl);
       this.currentAudio = audioEl;
 
-      // Connect Web Audio API analyser for visualizer
+      // Connect Web Audio API analyser to drive visualizer
       this._attachVisualizer(audioEl);
 
-      // Playback event hooks
       audioEl.onplay = () => {
         if (requestId !== this.activeRequestId) {
           audioEl.pause();
           return;
         }
-        this._setStatus("playing", "Speaking response");
+        this._setStatus("playing", "Speaking (Kokoro af_heart)");
         if (this.onStart) {
           try { this.onStart(); } catch (e) {}
         }
@@ -349,40 +223,65 @@ class VITHNeuralTTS {
         console.warn("[VITH TTS] Audio playback error:", e);
         if (requestId === this.activeRequestId) {
           this._cleanupAudio();
-          this._setStatus("ready", "Voice ready");
-          if (this.onEnd) {
-            try { this.onEnd(); } catch (e) {}
-          }
+          this._speakBrowserFallback(speechText, requestId);
         }
       };
 
       await audioEl.play();
     } catch (err) {
-      console.warn("[VITH TTS] Kokoro synthesis error:", err);
-      // Stale request check
+      console.warn("[VITH TTS] Hugging Face Kokoro unavailable or slow, falling back to browser natural voice:", err.message || err);
       if (requestId !== this.activeRequestId) return;
-
       this._cleanupAudio();
-
-      // Graceful fallback to browser Web Speech API
-      console.log("[VITH TTS] Falling back to Web Speech synthesis for response...");
       this._speakBrowserFallback(speechText, requestId);
     }
   }
 
   /**
-   * Stop any active synthesis or audio playback immediately
+   * Synthesize with Hugging Face Space with an automatic safety timeout
    */
-  stop() {
-    this.activeRequestId++; // Invalidate pending synthesis
+  async _synthesizeWithTimeout(text, requestId, timeoutMs = 3500) {
+    const synthPromise = (async () => {
+      if (!this.client) {
+        this.client = await Client.connect(this.hfSpace);
+      }
 
+      if (requestId !== this.activeRequestId) {
+        throw new Error("Request canceled");
+      }
+
+      // hexgrad/Kokoro-TTS Gradio interface: predict(0, [text, voice, speed])
+      const result = await this.client.predict(0, [
+        text,
+        this.voice,
+        this.speed
+      ]);
+
+      if (result && result.data && result.data[0]) {
+        const item = result.data[0];
+        const audioSrc = typeof item === "string" ? item : (item.url || item.path);
+        if (audioSrc) return audioSrc;
+      }
+
+      throw new Error("Invalid output received from Hugging Face Kokoro");
+    })();
+
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("Hugging Face Kokoro response timed out")), timeoutMs)
+    );
+
+    return Promise.race([synthPromise, timeoutPromise]);
+  }
+
+  /**
+   * Stop active audio internally without firing onEnd (used when starting new speech)
+   */
+  _stopActiveAudio() {
     if (this.currentAudio) {
       try {
         this.currentAudio.pause();
         this.currentAudio.currentTime = 0;
       } catch (e) {}
     }
-
     this._cleanupAudio();
 
     if (typeof window !== "undefined" && window.speechSynthesis) {
@@ -390,24 +289,30 @@ class VITHNeuralTTS {
         window.speechSynthesis.cancel();
       } catch (e) {}
     }
+  }
 
-    this._setStatus(this.tts ? "ready" : "uninitialized", this.tts ? "Voice ready" : "Voice engine in standby");
+  /**
+   * Stop any active synthesis or playback immediately (user action: ⏹, Esc, Avatar Tap)
+   */
+  stop() {
+    this.activeRequestId++; // Invalidate pending synthesis
+
+    this._stopActiveAudio();
+
+    this._setStatus(this.voiceEnabled ? "ready" : "muted", this.voiceEnabled ? "Voice ready" : "Voice output muted");
 
     if (this.onEnd) {
       try { this.onEnd(); } catch (e) {}
     }
   }
 
-  /**
-   * Clean up audio DOM elements & blob URLs
-   */
   _cleanupAudio() {
-    if (this.currentAudioUrl) {
+    if (this.currentAudioUrl && this.currentAudioUrl.startsWith("blob:")) {
       try {
         URL.revokeObjectURL(this.currentAudioUrl);
       } catch (e) {}
-      this.currentAudioUrl = null;
     }
+    this.currentAudioUrl = null;
     this.currentAudio = null;
   }
 
@@ -445,7 +350,7 @@ class VITHNeuralTTS {
         for (let i = 0; i < bufferLength; i++) {
           sum += dataArray[i];
         }
-        const avg = sum / bufferLength / 255; // 0 to 1
+        const avg = sum / bufferLength / 255;
         if (this.visualizerCallback) {
           this.visualizerCallback(avg);
         }
@@ -453,13 +358,12 @@ class VITHNeuralTTS {
       };
       tick();
     } catch (e) {
-      // MediaElementAudioSource already connected or CORS warning
-      console.warn("[VITH TTS] AudioContext visualizer connection note:", e.message);
+      console.warn("[VITH TTS] Audio visualizer connection note:", e.message);
     }
   }
 
   /**
-   * Browser SpeechSynthesis Fallback if ONNX model download/execution fails
+   * Browser SpeechSynthesis Fallback if HF Space is asleep (>3.5s) or offline
    */
   _speakBrowserFallback(text, requestId) {
     if (!("speechSynthesis" in window)) {
@@ -467,29 +371,35 @@ class VITHNeuralTTS {
       return;
     }
 
-    this._setStatus("fallback", "Speaking via browser speech engine");
+    this._setStatus("fallback", "Speaking via browser voice engine");
+
+    try {
+      window.speechSynthesis.cancel();
+    } catch (e) {}
 
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.rate = 1.05;
     utterance.pitch = 1.15;
     utterance.lang = "en-US";
 
-    // Select natural female voice if present
     const voices = window.speechSynthesis.getVoices();
-    const preferred = voices.find(v =>
-      v.name.includes("Natural") ||
-      v.name.includes("Jenny") ||
-      v.name.includes("Aria") ||
-      v.name.includes("Samantha") ||
-      (v.lang.startsWith("en") && v.name.toLowerCase().includes("female"))
-    );
-    if (preferred) utterance.voice = preferred;
+    if (voices && voices.length > 0) {
+      const preferred = voices.find(v =>
+        v.name.includes("Microsoft Jenny Online (Natural)") ||
+        v.name.includes("Microsoft Aria Online (Natural)") ||
+        v.name.includes("Google US English") ||
+        v.name.includes("Samantha") ||
+        (v.lang.startsWith("en") && (v.name.toLowerCase().includes("female") || v.gender === "female"))
+      ) || voices.find(v => v.lang.startsWith("en")) || voices[0];
+      if (preferred) utterance.voice = preferred;
+    }
 
     utterance.onstart = () => {
       if (requestId !== this.activeRequestId) {
-        window.speechSynthesis.cancel();
+        try { window.speechSynthesis.cancel(); } catch (e) {}
         return;
       }
+      this._setStatus("playing", "Speaking (Browser Voice)");
       if (this.onStart) {
         try { this.onStart(); } catch (e) {}
       }
@@ -504,7 +414,9 @@ class VITHNeuralTTS {
       }
     };
 
-    utterance.onerror = () => {
+    utterance.onerror = (err) => {
+      if (err.error === "canceled" || err.error === "interrupted") return;
+      console.warn("[VITH Browser TTS Error]", err);
       if (requestId === this.activeRequestId) {
         this._setStatus("ready", "Voice ready");
         if (this.onEnd) {
@@ -513,7 +425,14 @@ class VITHNeuralTTS {
       }
     };
 
-    window.speechSynthesis.speak(utterance);
+    try {
+      window.speechSynthesis.speak(utterance);
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+      }
+    } catch (e) {
+      console.warn("[VITH Browser TTS Exception]", e);
+    }
   }
 }
 

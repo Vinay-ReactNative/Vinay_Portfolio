@@ -400,7 +400,7 @@ section {
   gap: clamp(1rem, 3vw, 3rem);
   align-items: center;
   min-height: 100vh;
-  padding: 110px 5% 125px;
+  padding: 96px 5% 104px;
 }
 
 #hero::before,
@@ -436,7 +436,7 @@ section {
   z-index: 2;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.2rem;
 }
 
 .hero-badge {
@@ -464,7 +464,7 @@ section {
 
 .hero-name {
   font-family: var(--font-hud);
-  font-size: clamp(2.5rem, 6vw, 5rem);
+  font-size: clamp(2.5rem, 5vw, 4rem);
   font-weight: 900;
   line-height: 1;
   color: var(--text-primary);
@@ -474,6 +474,9 @@ section {
 .hero-name span {
   color: var(--holo-cyan);
   display: block;
+  font-size: clamp(2rem, 3.5vw, 3.1rem);
+  letter-spacing: -0.04em;
+  white-space: nowrap;
   text-shadow: var(--glow-lg);
 }
 
@@ -2699,6 +2702,10 @@ footer {
   .hero-content {
     align-items: center;
   }
+  .hero-name span {
+    font-size: clamp(2rem, 7vw, 3.4rem);
+    white-space: normal;
+  }
   .hero-bio {
     text-align: left;
   }
@@ -2739,6 +2746,9 @@ footer {
     gap: 1rem;
     padding-top: 92px;
     padding-bottom: 112px;
+  }
+  .hero-name span {
+    font-size: clamp(1.8rem, 9vw, 2.8rem);
   }
   .vith-holo-container {
     height: 300px;

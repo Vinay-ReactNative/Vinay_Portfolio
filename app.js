@@ -1037,39 +1037,33 @@ function initVITHPanel() {
 
     switch (status) {
       case "loading":
-        voiceChip.classList.add("loading");
-        const match = message ? message.match(/\d+%/) : null;
-        voiceChip.textContent = match ? `[${match[0]}]` : "[LOADING VOICE...]";
-        voiceChip.title = message || "Downloading Kokoro-82M voice model...";
-        break;
       case "synthesizing":
         voiceChip.classList.add("loading");
         voiceChip.textContent = "[SYNTHESIZING]";
-        voiceChip.title = "Kokoro.js generating speech audio...";
+        voiceChip.title = "Kokoro AI generating speech via Hugging Face...";
         break;
       case "playing":
         voiceChip.classList.add("speaking");
         voiceChip.textContent = "[SPEAKING]";
-        voiceChip.title = "VITH speaking response (af_heart)";
+        voiceChip.title = "VITH speaking response (Kokoro af_heart)";
         break;
       case "fallback":
         voiceChip.classList.add("fallback");
-        voiceChip.textContent = "[BROWSER TTS]";
-        voiceChip.title = "Browser SpeechSynthesis active";
+        voiceChip.textContent = "[BROWSER VOICE]";
+        voiceChip.title = "Natural Browser Voice Active";
         break;
       case "ready":
-        const dev = window.VITH_TTS && window.VITH_TTS.device ? window.VITH_TTS.device.toUpperCase() : "AF_HEART";
-        voiceChip.textContent = `[${dev}]`;
-        voiceChip.title = message || "Kokoro.js af_heart neural voice ready";
+        voiceChip.textContent = "[KOKORO AF_HEART]";
+        voiceChip.title = "Kokoro Neural Voice (af_heart) Ready";
         break;
       case "error":
         voiceChip.classList.add("fallback");
-        voiceChip.textContent = "[SPEECH FALLBACK]";
-        voiceChip.title = message || "Web Speech API fallback active";
+        voiceChip.textContent = "[VOICE STANDBY]";
+        voiceChip.title = message || "Voice engine in standby";
         break;
       default:
-        voiceChip.textContent = "[AF_HEART]";
-        voiceChip.title = "Kokoro.js Neural Voice (af_heart)";
+        voiceChip.textContent = "[KOKORO AF_HEART]";
+        voiceChip.title = "Kokoro Neural Voice (af_heart)";
     }
   }
 

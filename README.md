@@ -35,17 +35,17 @@
 * **Smart Visibility Checks**: Detects if an element is already in the viewport to avoid disruptive jumps on follow-up queries.
 * **Accessibility / Reduced Motion**: Fully respects `prefers-reduced-motion: reduce` system preferences.
 
-### 3. 🎙️ Neural Voice & Audio Pipeline (Kokoro.js `af_heart`)
+### 3. 🎙️ Neural Voice & Audio Pipeline (Kokoro `af_heart` via Hugging Face Cloud)
 * **Real-time Speech Recognition (STT)**: Uses Web Speech API with live transcript streaming into the assistant input.
 * **Automatic 1.8s Silence Auto-Submit**: Intelligent pause detection automatically submits speech after 1.8 seconds of silence without requiring manual button clicks.
-* **Client-Side Neural TTS (Kokoro.js — `af_heart`)**: High-fidelity, crystal-clear female neural voice generation powered by `onnx-community/Kokoro-82M-v1.0-ONNX` (quantized `q8`).
-  * **Zero External API Keys**: Runs 100% in the visitor's browser — no backend proxy, no usage limits, no ElevenLabs or Fish Audio API keys required!
-  * **Hardware Acceleration**: Automatic WebGPU execution for ultra-fast, stutter-free synthesis, with seamless fallback to WebAssembly (WASM).
-  * **Browser Speech Synthesis Fallback**: Automatic failover to Web Speech API if ONNX initialization is unsupported, ensuring VITH is never silent.
+* **Hugging Face Kokoro Neural TTS (`af_heart`)**: High-fidelity, crystal-clear female neural voice generation powered by Hugging Face Spaces (`hexgrad/Kokoro-TTS`).
+  * **Zero Client Download**: No heavy 90 MB model downloads on the user's computer; audio streams in lightweight, high-quality format.
+  * **100% Free Forever**: Runs on Hugging Face's free tier with zero API keys and zero credit cards required.
+  * **3.5s Smart Safety Failover**: If the Hugging Face Space is asleep or takes $> 3.5\text{s}$, VITH seamlessly speaks using the browser's built-in natural neural voice (*Microsoft Jenny Natural* / *Google US English*), while the cloud Space finishes waking up in the background so VITH is **never silent**.
   * **Audio Equalizer Visualizer**: Connected directly to the Web Audio API to drive real-time HUD waveform equalizer bars during speech.
 * **Voice Controls & HUD Indicator**:
   * **Voice Mute/Unmute Toggle (`🔊`/`🔇`)**: Easily toggle spoken output on or off; visitor preference is preserved in `localStorage`.
-  * **HUD Voice Status Chip**: Dynamic Stark-tech badge (`[AF_HEART]`, `[WEBGPU]`, `[WASM]`, `[MUTED]`, `[BROWSER TTS]`) showing real-time engine state.
+  * **HUD Voice Status Chip**: Dynamic Stark-tech badge (`[KOKORO AF_HEART]`, `[SYNTHESIZING]`, `[SPEAKING]`, `[BROWSER VOICE]`, `[VOICE MUTED]`).
 * **Instant Speech Interruption**: Dedicated holographic Stop button (`⏹`), `Esc` hotkey, and avatar core tap to immediately interrupt or cancel VITH's speech mid-sentence.
 * **Audio Feedback Loop Prevention**: Automatically pauses microphone recognition while VITH is speaking to prevent self-hearing.
 
@@ -89,7 +89,7 @@ Vinay_Portfolio/
 ## 🚀 Quick Start
 
 ### 1. Zero API Keys Required!
-VITH uses **Kokoro.js (`af_heart`)** to synthesize neural speech directly inside the visitor's browser using WebGPU or WASM. No external API keys, tokens, or subscription plans are needed.
+VITH uses **Kokoro (`af_heart`)** hosted on a free Hugging Face Space backend with automatic instant fallback to the browser's built-in natural speech engine. No external paid API keys, tokens, or subscription plans are needed.
 
 ### 2. Local Development Server
 To run locally, start the built-in static dev server:

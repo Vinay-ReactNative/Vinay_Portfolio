@@ -237,7 +237,6 @@ const VITHVoice = {
 
   async speak(text) {
     if (!text) return;
-    this.stopSpeaking();
 
     // Check if user disabled voice output
     if (typeof window !== "undefined" && window.VITH_TTS && window.VITH_TTS.voiceEnabled === false) {
@@ -246,10 +245,24 @@ const VITHVoice = {
       return;
     }
 
+    // Stop active audio/synthesis without triggering premature onSpeakEnd
+    clearInterval(this._resumeInterval);
+    this._activeUtterance = null;
+    if (this.currentAudio) {
+      try {
+        this.currentAudio.pause();
+        this.currentAudio.currentTime = 0;
+      } catch (e) {}
+      this.currentAudio = null;
+    }
+    if (window.speechSynthesis) {
+      try { window.speechSynthesis.cancel(); } catch (e) {}
+    }
+
     if (this.onSpeakStart) this.onSpeakStart();
     this.isSpeaking = true;
 
-    // Primary: Kokoro.js Neural TTS (af_heart)
+    // Primary: Kokoro Neural TTS (af_heart via Hugging Face Cloud)
     if (typeof window !== "undefined" && window.VITH_TTS) {
       try {
         await window.VITH_TTS.speak(text);
