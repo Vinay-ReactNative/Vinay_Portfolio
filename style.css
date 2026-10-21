@@ -2934,8 +2934,13 @@ footer {
     letter-spacing: 2px;
   }
   .capsule-input {
+    flex: 1 1 0;
+    width: 0;
+    height: 100%;
     font-size: 0.82rem;
     padding: 0;
+    line-height: normal;
+    text-align: left;
   }
   .capsule-input::placeholder {
     font-size: 0.75rem;
@@ -2960,13 +2965,28 @@ footer {
     bottom: 0;
   }
   #vith-capsule #vith-mic {
-    bottom: 50px;
+    bottom: 54px;
   }
   #vith-capsule #vith-voice-toggle {
-    bottom: 100px;
+    bottom: 122px;
   }
   #vith-capsule #vith-history-btn {
-    bottom: 150px;
+    bottom: 190px;
+  }
+  #vith-capsule #vith-mic,
+  #vith-capsule #vith-voice-toggle,
+  #vith-capsule #vith-history-btn,
+  #vith-capsule #vith-send {
+    width: 58px;
+    height: 58px;
+    flex: 0 0 58px;
+  }
+  #vith-capsule #vith-mic svg,
+  #vith-capsule #vith-voice-toggle svg,
+  #vith-capsule #vith-history-btn > svg,
+  #vith-capsule #vith-send svg {
+    width: 22px;
+    height: 22px;
   }
   .capsule-btn,
   #vith-capsule .capsule-btn {

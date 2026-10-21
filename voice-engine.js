@@ -147,9 +147,13 @@ const VITHVoice = {
       return;
     }
 
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
     this.recognition = new SpeechRecognition();
     this.recognition.lang = this.config.stt.lang || "en-US";
-    this.recognition.continuous = this.config.stt.continuous;
+    // On mobile devices, continuous mode causes duplicate cumulative phrases in Android Chrome.
+    // Setting continuous=false on mobile is the industry-standard recommendation.
+    this.recognition.continuous = isMobile ? false : this.config.stt.continuous;
     this.recognition.interimResults = this.config.stt.interimResults;
 
     this.recognition.onaudiostart = () => {
@@ -160,18 +164,37 @@ const VITHVoice = {
       console.log("%c[VITH STT Event: onspeechstart]%c Speech detected by recognizer", "color: #00ff88", "color: inherit");
     };
 
+    this._lastTranscript = "";
+
     this.recognition.onresult = (event) => {
-      let fullTranscript = "";
+      let rawTranscript = "";
       let hasInterim = false;
 
-      for (let i = 0; i < event.results.length; i++) {
-        const item = event.results[i];
-        if (item && item[0]) {
-          fullTranscript += item[0].transcript + " ";
-          if (!item.isFinal) hasInterim = true;
+      if (isMobile) {
+        // Mobile Android Speech Recognizer sends cumulative phrases in the latest result slot.
+        // Reading the latest result avoids concatenating old slots into repeated text!
+        for (let i = event.results.length - 1; i >= 0; i--) {
+          const item = event.results[i];
+          if (item && item[0] && item[0].transcript) {
+            rawTranscript = item[0].transcript;
+            if (!item.isFinal) hasInterim = true;
+            break;
+          }
+        }
+      } else {
+        // Desktop: standard accumulation using event.resultIndex
+        for (let i = 0; i < event.results.length; i++) {
+          const item = event.results[i];
+          if (item && item[0]) {
+            rawTranscript += item[0].transcript + " ";
+            if (!item.isFinal) hasInterim = true;
+          }
         }
       }
-      fullTranscript = fullTranscript.trim();
+
+      // Universal speech cleaner: removes engine stutter and adjacent repeated phrases
+      const fullTranscript = this._cleanSpeechTranscript(rawTranscript);
+      this._lastTranscript = fullTranscript;
 
       if (this.onListenResult) {
         this.onListenResult(fullTranscript, !hasInterim);
@@ -180,6 +203,8 @@ const VITHVoice = {
       clearTimeout(this.silenceTimer);
       if (fullTranscript.length > 0) {
         this.silenceTimer = setTimeout(() => {
+          this.silenceTimer = null;
+          this._lastTranscript = "";
           if (this.onListenSubmit) {
             this.onListenSubmit(fullTranscript);
           }
@@ -190,12 +215,27 @@ const VITHVoice = {
     this.recognition.onend = () => {
       console.log("%c[VITH STT Event: onend]%c Recognition cycle ended", "color: #ffaa00", "color: inherit");
       this.isListening = false;
+
+      // On mobile / single-turn: if recognition ends with a captured query, submit immediately!
+      if (this.silenceTimer && this._lastTranscript) {
+        clearTimeout(this.silenceTimer);
+        this.silenceTimer = null;
+        const toSubmit = this._lastTranscript;
+        this._lastTranscript = "";
+        if (this.onListenSubmit) {
+          this.onListenSubmit(toSubmit);
+        }
+      }
+
       if (this.onListenEnd) this.onListenEnd();
     };
 
     this.recognition.onerror = (e) => {
       console.warn(`[VITH STT Error] "${e.error}"`);
       this.isListening = false;
+      this._lastTranscript = "";
+      clearTimeout(this.silenceTimer);
+      this.silenceTimer = null;
       if (e.error === "no-speech") return;
       if (e.error === "not-allowed" || e.error === "audio-capture") {
         if (this.onPermissionDenied) this.onPermissionDenied(e.error);
@@ -203,6 +243,20 @@ const VITHVoice = {
         if (this.onError) this.onError(e);
       }
     };
+  },
+
+  // ─── STT CLEANER: DEDUPLICATION FILTER ────────────────────────────────────
+  _cleanSpeechTranscript(text) {
+    if (!text) return "";
+    let clean = text.trim();
+
+    // 1. Deduplicate repeated multi-word phrases (2 to 6 words, e.g. "what is his what is his" -> "what is his")
+    clean = clean.replace(/\b(\w+(?:\s+\w+){1,6})\s+\1\b/gi, (match, group) => group);
+
+    // 2. Deduplicate immediate stuttered words (e.g. "his his" -> "his")
+    clean = clean.replace(/\b(\w+)\s+\1\b/gi, (match, group) => group);
+
+    return clean.replace(/\s+/g, " ").trim();
   },
 
   // ─── TTS: PREPROCESS & CHUNKING ──────────────────────────────────────────
