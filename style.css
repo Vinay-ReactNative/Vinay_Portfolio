@@ -224,8 +224,8 @@ body {
 }
 
 section {
-  min-height: 100vh;
-  padding: 80px 5%;
+  min-height: auto;
+  padding: 56px 5%;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -2483,6 +2483,8 @@ body.modal-open {
 /* ── CONTACT SECTION ──────────────────────────────────────── */
 #contact {
   text-align: center;
+  min-height: auto;
+  padding-bottom: 24px;
 }
 
 .contact-grid {
@@ -3034,9 +3036,6 @@ footer {
     max-width: 100%;
     overflow-wrap: anywhere;
     word-break: normal;
-  }
-  #contact {
-    padding-bottom: 220px;
   }
 }
 

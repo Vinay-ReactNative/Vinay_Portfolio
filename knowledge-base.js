@@ -20,12 +20,12 @@ const VITH_KNOWLEDGE = {
     email: "vinaykumarb865@gmail.com",
     phone: "",
     github: "https://github.com/Vinay-ReactNative",
-    linkedin: "https://linkedin.com/in/vinaykumarb", // Update if different
+    linkedin: "https://www.linkedin.com/in/vinaykumarb865/?isSelfProfile=true", // Update if different
     twitter: "",
     website: "",
 
     bio: `Vinay Kumar B is a Senior React Native Developer based in Bangalore, India,
-    with over two years of professional experience building cross-platform mobile applications
+    with 3+ years of professional experience building cross-platform mobile applications
     for Android and iOS. He specialises in crafting performant, production-grade mobile
     solutions — from consumer utility apps and workforce management platforms to
     payment gateway integrations and mobile security implementations.
@@ -89,7 +89,7 @@ const VITH_KNOWLEDGE = {
       company: "Esyasoft Smart Research",
       role: "Senior React Native Developer",
       period: "2024 — Present",
-      duration: "2+ years (ongoing)",
+      duration: "3+ years (ongoing)",
       location: "Bangalore, India",
       description: `Working as a Senior React Native Developer on enterprise-grade
       cross-platform mobile applications for utility and field operations.
@@ -338,7 +338,7 @@ const VITH_KNOWLEDGE = {
     A personal AI assistant created by Vinay,
     inspired by Tony Stark's EDITH.
     Vinay is a Senior React Native Developer based in Bangalore,
-    with over two years of experience building cross-platform mobile applications
+    with 3+ years of experience building cross-platform mobile applications
     for Android and iOS — from enterprise workforce management platforms
     to consumer utility apps, payment integrations, and mobile security work.
     Beyond his professional career, he is building VINXO —
@@ -699,7 +699,7 @@ const VITH_QA = {
         "who is the owner",
         "creator"
       ],
-      answer: () => `Vinay Kumar is a Senior React Native Developer based in Bangalore with over two years of professional experience building cross-platform mobile apps for Android and iOS. He specializes in enterprise platforms, consumer utilities, payment integrations, and mobile security.`
+      answer: () => `Vinay Kumar is a Senior React Native Developer based in Bangalore with 3+ years of professional experience building cross-platform mobile apps for Android and iOS. He specializes in enterprise platforms, consumer utilities, payment integrations, and mobile security.`
     },
 
     // ── SKILLS & TECHNOLOGIES ──────────────────────────────────
@@ -792,7 +792,7 @@ const VITH_QA = {
         "where did he work",
         "experience"
       ],
-      answer: () => `Vinay has over two years of professional experience across two companies. He is currently a Senior React Native Developer at Esyasoft Smart Research working on enterprise utility platforms, and previously worked as a Junior React Native Engineer at Perisync Technology.`
+      answer: () => `Vinay has 3+ years of professional experience across two companies. He is currently a Senior React Native Developer at Esyasoft Smart Research working on enterprise utility platforms, and previously worked as a Junior React Native Engineer at Perisync Technology.`
     },
 
     // ── GENERAL PROJECTS OVERVIEW ──────────────────────────────
