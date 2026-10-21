@@ -3,11 +3,40 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>VITH — Vinay Is The Hero</title>
+    <title>Vinay Kumar | Senior React Native Developer & AI Systems Engineer | VITH</title>
     <meta
       name="description"
-      content="Portfolio of Vinay — powered by VITH AI, an EDITH-inspired holographic assistant."
+      content="Interactive holographic portfolio of Vinay Kumar, Senior React Native Developer & AI Systems Engineer. Featuring VITH — real-time neural AI voice assistant."
     />
+    <meta
+      name="keywords"
+      content="Vinay Kumar, React Native Developer, Senior React Native Engineer, AI Systems, VITH, VINXO, Mobile Engineer, Android, iOS, TypeScript, Redux, Bangalore, Holographic Portfolio"
+    />
+    <meta name="author" content="Vinay Kumar B" />
+    <meta name="theme-color" content="#00070d" />
+    <link rel="canonical" href="https://vinay-react-native-ai.netlify.app/" />
+
+    <!-- Open Graph / LinkedIn / WhatsApp -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://vinay-react-native-ai.netlify.app/" />
+    <meta property="og:site_name" content="Vinay Kumar | VITH AI Portfolio" />
+    <meta property="og:title" content="Vinay Kumar | Senior React Native Developer & AI Systems Engineer" />
+    <meta
+      property="og:description"
+      content="Interactive holographic portfolio powered by VITH — an EDITH-inspired real-time neural AI voice assistant."
+    />
+    <meta property="og:image" content="https://vinay-react-native-ai.netlify.app/screenshots/02_hero_section.png" />
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://vinay-react-native-ai.netlify.app/" />
+    <meta name="twitter:title" content="Vinay Kumar | Senior React Native Developer & AI Systems Engineer" />
+    <meta
+      name="twitter:description"
+      content="Interactive holographic portfolio powered by VITH — real-time neural AI voice assistant."
+    />
+    <meta name="twitter:image" content="https://vinay-react-native-ai.netlify.app/screenshots/02_hero_section.png" />
+
     <link
       rel="icon"
       href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⬡</text></svg>"
@@ -146,7 +175,7 @@
                 class="mono text-cyan"
                 style="font-size: 1.4rem; font-weight: 700"
               >
-                2+
+                3+
               </div>
               <div
                 class="mono"
@@ -319,7 +348,7 @@
           <div>
             <div class="about-stat-grid">
               <div class="holo-card stat-card fade-in">
-                <span class="stat-num">2+</span>
+                <span class="stat-num">3+</span>
                 <span class="stat-label">YEARS OF<br />EXPERIENCE</span>
               </div>
               <div class="holo-card stat-card fade-in">
@@ -452,8 +481,8 @@
         VITH · VINAY IS THE HERO · Inspired by EDITH &amp; Tony Stark · Built
         with ♥ and a lot of caffeine
       </p>
-      <p style="margin-top: 4px; opacity: 0.5">
-        © 2025 Vinay · All rights reserved
+      <p style="margin-top: 4px; opacity: 0.8">
+        © <span id="copyright-year"></span> @Vinay · All rights reserved
       </p>
     </footer>
 
@@ -700,6 +729,8 @@
     <script>
       document.addEventListener("DOMContentLoaded", () => {
         const kb = VITH_KNOWLEDGE;
+        document.getElementById("copyright-year").textContent =
+          new Date().getFullYear();
 
         // Hero
         document.getElementById("hero-name-text").textContent = kb.owner.name;
