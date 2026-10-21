@@ -1,7 +1,15 @@
 /**
  * Netlify Serverless Function: Fish Audio Neural TTS Proxy
  * Endpoint: /.netlify/functions/tts (Rewritten from /api/tts via netlify.toml)
+ * Features:
+ * - In-memory lambda edge caching across warm invocations
+ * - Sub-millisecond response for repeat voice queries
  */
+
+const crypto = require("crypto");
+
+// Lambda warm instance memory cache
+const memoryCache = new Map();
 
 exports.handler = async (event) => {
   // CORS Preflight
@@ -61,6 +69,29 @@ exports.handler = async (event) => {
     const model = payload.model || "s2.1-pro-free";
     const format = payload.format || "mp3";
 
+    // 1. Check in-memory lambda cache
+    const cacheKey = crypto
+      .createHash("sha256")
+      .update(JSON.stringify({ text: cleanText, voice: voiceId, model, format }))
+      .digest("hex");
+
+    if (memoryCache.has(cacheKey)) {
+      const cachedBase64 = memoryCache.get(cacheKey);
+      return {
+        statusCode: 200,
+        headers: {
+          "Content-Type": "audio/mpeg",
+          "Access-Control-Allow-Origin": "*",
+          "Cache-Control": "public, max-age=86400, s-maxage=86400",
+          "X-VITH-Cache": "HIT",
+          "X-VITH-Proxy": "Netlify-Serverless"
+        },
+        body: cachedBase64,
+        isBase64Encoded: true
+      };
+    }
+
+    // 2. Fetch from Fish Audio API
     const fishRes = await fetch("https://api.fish.audio/v1/tts", {
       method: "POST",
       headers: {
@@ -88,12 +119,20 @@ exports.handler = async (event) => {
     const arrayBuffer = await fishRes.arrayBuffer();
     const base64Audio = Buffer.from(arrayBuffer).toString("base64");
 
+    // Cache in warm memory (keep max 100 items to conserve memory)
+    if (memoryCache.size >= 100) {
+      const firstKey = memoryCache.keys().next().value;
+      memoryCache.delete(firstKey);
+    }
+    memoryCache.set(cacheKey, base64Audio);
+
     return {
       statusCode: 200,
       headers: {
         "Content-Type": "audio/mpeg",
         "Access-Control-Allow-Origin": "*",
         "Cache-Control": "public, max-age=86400, s-maxage=86400",
+        "X-VITH-Cache": "MISS",
         "X-VITH-Proxy": "Netlify-Serverless"
       },
       body: base64Audio,

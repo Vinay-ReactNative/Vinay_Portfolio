@@ -47,7 +47,7 @@ const VITHVoice = {
   recognition: null,
   isListening: false,
   silenceTimer: null,          // Auto-submit after silence
-  silenceDelay: 1000,          // Reduced from 1800ms to 1000ms for snappy voice queries
+  silenceDelay: 750,           // Tuned from 1000ms to 750ms for snappy voice queries
   onSpeakStart: null,
   onSpeakEnd: null,
   onListenResult: null,
@@ -60,6 +60,7 @@ const VITHVoice = {
   _audioCtx: null,
   _analyser: null,
   _preloadedAudios: new Map(), // In-memory client cache of preloaded Audio Blobs
+  _pendingFetches: new Map(),  // Active in-flight fetch promises to prevent duplicate network calls
 
   // ─── INIT ─────────────────────────────────────────────────────────────────
   async init() {
@@ -289,7 +290,13 @@ const VITHVoice = {
    * Splits into natural speech sentences so the first chunk synthesizes in ~1.5s,
    * while subsequent sentences stream in the background!
    */
-  _splitIntoSpeechChunks(text, maxChunkLen = 140) {
+  /**
+   * Smart sentence chunking with acronym protection and spoken breath unit splitting.
+   * - Keeps Chunk 0 fast (~35-65 chars) so Fish Audio returns speech in ~1.2s
+   * - Sub-splits sentences > 80 chars into natural clauses under 120 chars
+   * - Streams subsequent chunks seamlessly while earlier chunks play out loud!
+   */
+  _splitIntoSpeechChunks(text, maxChunkLen = 120) {
     if (!text) return [];
 
     // Protect periods in acronyms (A.I., A.P.I., etc.)
@@ -297,32 +304,63 @@ const VITHVoice = {
       .replace(/([A-Za-z])\.([A-Za-z])\.([A-Za-z])\./g, (m, a, b, c) => `${a}§${b}§${c}§`)
       .replace(/([A-Za-z])\.([A-Za-z])\./g, (m, a, b) => `${a}§${b}§`);
 
-    // Split on sentence terminators (. ! ?) followed by space
+    // Split on sentence terminators (. ! ?)
     const rawSentences = safe.split(/(?<=[.!?])\s+/);
     const sentences = rawSentences
       .map(s => s.replace(/§/g, ".").trim())
       .filter(s => s.length > 0);
 
-    if (sentences.length <= 1) return sentences;
+    // Sub-split any sentence > 80 chars into natural spoken breath units (commas, conjunctions, dashes)
+    const atomicClauses = [];
+    for (const s of sentences) {
+      if (s.length <= 80) {
+        atomicClauses.push(s);
+      } else {
+        // Split on em-dash, semicolon, colon, or comma
+        const parts = s.split(/(?<=[;—:])\s*|,\s*/);
+        for (let p of parts) {
+          p = p.trim();
+          if (!p) continue;
+          if (p.length <= 80) {
+            atomicClauses.push(p);
+          } else {
+            // If still long, split before preposition phrases
+            const sub = p.split(/\s+(?=(?:with|across|building|specializing|integrating|featuring|including|delivering|handling)\b)/i);
+            for (let sp of sub) {
+              sp = sp.trim();
+              if (sp) atomicClauses.push(sp);
+            }
+          }
+        }
+      }
+    }
 
     const chunks = [];
     let current = "";
 
-    for (let i = 0; i < sentences.length; i++) {
-      const s = sentences[i];
-      // Keep Chunk 0 fast & short (>= 28 chars) so playback begins in ~1.5 - 2s
-      if (i === 0 && s.length >= 28 && s.length <= maxChunkLen) {
-        chunks.push(s);
+    for (let i = 0; i < atomicClauses.length; i++) {
+      const clause = atomicClauses[i];
+
+      // Fast-start Chunk 0: target 35-65 chars for instant ~1.2s start
+      if (i === 0) {
+        current = clause;
+        if (current.length < 28 && i + 1 < atomicClauses.length) {
+          i++;
+          current += " " + atomicClauses[i];
+        }
+        chunks.push(current);
+        current = "";
         continue;
       }
 
       if (!current) {
-        current = s;
-      } else if ((current + " " + s).length <= maxChunkLen) {
-        current += " " + s;
+        current = clause;
+      } else if ((current + " " + clause).length <= maxChunkLen) {
+        const sep = /[.!?;—]$/.test(current) ? " " : ", ";
+        current += sep + clause;
       } else {
         chunks.push(current);
-        current = s;
+        current = clause;
       }
     }
     if (current) chunks.push(current);
@@ -363,53 +401,70 @@ const VITHVoice = {
     return null;
   },
 
-  // ─── TTS: FETCH AUDIO BLOB ────────────────────────────────────────────────
+  // ─── TTS: FETCH AUDIO BLOB (WITH IN-FLIGHT DEDUPLICATION) ─────────────────
   async _fetchAudioBlob(text, abortSignal) {
-    const { apiKey, voiceId, model, format, endpoint, proxyEndpoint } = this.config.fishAudio;
-    const payload = {
-      text,
-      reference_id: voiceId,
-      model: model || "s2.1-pro-free",
-      format: format || "mp3"
-    };
+    if (!text) return null;
 
-    let response = null;
+    // Check if there is already an in-flight network request for this exact text (prevents duplicate fetches)
+    if (this._pendingFetches.has(text)) {
+      console.log(`[VITH Voice] In-flight request reused for: "${text.slice(0, 35)}..."`);
+      return await this._pendingFetches.get(text);
+    }
 
-    // 1. Local proxy server (supports persistent disk caching)
-    try {
-      const proxyRes = await fetch(proxyEndpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-        signal: abortSignal
-      });
-      if (proxyRes.ok) {
-        response = proxyRes;
+    const fetchPromise = (async () => {
+      const { apiKey, voiceId, model, format, endpoint, proxyEndpoint } = this.config.fishAudio;
+      const payload = {
+        text,
+        reference_id: voiceId,
+        model: model || "s2.1-pro-free",
+        format: format || "mp3"
+      };
+
+      let response = null;
+
+      // 1. Local proxy server (supports persistent disk caching)
+      try {
+        const proxyRes = await fetch(proxyEndpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+          signal: abortSignal
+        });
+        if (proxyRes.ok) {
+          response = proxyRes;
+        }
+      } catch (proxyErr) {
+        if (abortSignal && abortSignal.aborted) throw proxyErr;
       }
-    } catch (proxyErr) {
-      if (abortSignal && abortSignal.aborted) throw proxyErr;
-    }
 
-    // 2. Direct API request fallback
-    if (!response) {
-      response = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-          "model": model || "s2.1-pro-free"
-        },
-        body: JSON.stringify(payload),
-        signal: abortSignal
-      });
-    }
+      // 2. Direct API request fallback
+      if (!response) {
+        response = await fetch(endpoint, {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
+            "model": model || "s2.1-pro-free"
+          },
+          body: JSON.stringify(payload),
+          signal: abortSignal
+        });
+      }
 
-    if (!response.ok) {
-      const errText = await response.text();
-      throw new Error(`Fish Audio API returned ${response.status}: ${errText}`);
-    }
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`Fish Audio API returned ${response.status}: ${errText}`);
+      }
 
-    return await response.blob();
+      return await response.blob();
+    })();
+
+    this._pendingFetches.set(text, fetchPromise);
+    try {
+      return await fetchPromise;
+    } finally {
+      this._pendingFetches.delete(text);
+    }
   },
 
   // ─── TTS: SPEAK (MAIN ENTRY) ──────────────────────────────────────────────

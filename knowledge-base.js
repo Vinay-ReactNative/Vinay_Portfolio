@@ -25,12 +25,12 @@ const VITH_KNOWLEDGE = {
     website: "",
 
     bio: `Vinay Kumar B is a Senior React Native Developer based in Bangalore, India,
-    with 3+ years of professional experience building cross-platform mobile applications
-    for Android and iOS. He specialises in crafting performant, production-grade mobile
-    solutions — from consumer utility apps and workforce management platforms to
-    payment gateway integrations and mobile security implementations.
-    His work spans field operations, smart metering, and enterprise-grade mobile products
-    deployed on both the Google Play Store and Apple App Store.`,
+    with 3+ years of professional experience building high-concurrency cross-platform applications
+    for Android and iOS. A major technical standout is his enterprise GIS and Network Surveying expertise —
+    having independently architected the Network Survey module at Esyasoft Smart Research using
+    Google Maps and Apple Maps with satellite telemetry, geospatial asset plotting, and offline-first data sync.
+    His production work also spans consumer utility apps, payment gateways, mobile security hardening,
+    and AI-powered conversational systems.`,
 
     // inspiration: `Vinay is deeply inspired by Tony Stark — not just as a fan,
     // but as someone who shares the same philosophy: intelligence, innovation, and relentless
@@ -56,6 +56,12 @@ const VITH_KNOWLEDGE = {
       { name: "Xcode", category: "Platform Tools" },
       { name: "Google Play Console", category: "Distribution" },
       { name: "Apple Developer Distribution", category: "Distribution" },
+      // GIS & Spatial Telemetry
+      { name: "GIS Spatial Mapping", category: "GIS & Spatial" },
+      { name: "Satellite Field Surveying", category: "GIS & Spatial" },
+      { name: "Google Maps & Apple Maps GIS", category: "GIS & Spatial" },
+      { name: "Offline Spatial Sync", category: "GIS & Spatial" },
+      { name: "Network Asset Topology", category: "GIS & Spatial" },
       // Integrations
       { name: "Google Maps / Apple Maps", category: "Maps & Location" },
       { name: "Payment Gateways (Razorpay, Easebuzz, BillDesk)", category: "Integrations" },
@@ -818,6 +824,18 @@ const VITH_QA = {
 
     // ── SPECIFIC PROJECTS (Targeted navigation & cards) ───────
     {
+      name: "ABOUT_GIS_SURVEY",
+      weight: 24,
+      section: "about",
+      targetItem: { type: "gis", id: "about-gis-card" },
+      keywords: [
+        "gis", "network survey", "spatial", "field survey", "field surveying",
+        "gis mapping", "satellite survey", "satellite mapping", "apple maps",
+        "google maps", "geospatial", "grid survey", "offline spatial", "asset telemetry"
+      ],
+      answer: () => `A key technical differentiator in Vinay's background is enterprise GIS and Network Survey engineering at Esyasoft. He independently architected the Network Survey module, integrating Google Maps and Apple Maps with satellite layers for field surveying, asset plotting, and offline-first spatial synchronization.`
+    },
+    {
       name: "PROJECT_SPECIFIC",
       weight: 18,
       section: "projects",
@@ -830,7 +848,7 @@ const VITH_QA = {
       weight: 18,
       section: "projects",
       targetItem: { type: "project", id: "wfm", index: 1 },
-      keywords: ["workforce management", "workforce platform", "wfm", "network survey", "field surveying"],
+      keywords: ["workforce management", "workforce platform", "wfm", "workforce app"],
       answer: () => `The Workforce Management Platform is an enterprise application Vinay developed at Esyasoft Smart Research. He independently developed the Network Survey module and integrated Google Maps and Apple Maps for satellite field surveying.`
     },
     {

@@ -1460,6 +1460,106 @@ section {
   margin-top: 4px;
 }
 
+/* ── ABOUT: GIS & NETWORK SURVEY SPOTLIGHT ──────────────────── */
+.about-gis-spotlight {
+  margin-top: 2rem;
+  padding: 1.75rem 2rem;
+  position: relative;
+  overflow: hidden;
+  border-left: 3px solid #00ff88 !important;
+  background:
+    radial-gradient(circle at 95% 5%, rgba(0, 255, 136, 0.08), transparent 45%),
+    linear-gradient(135deg, rgba(10, 20, 38, 0.95) 0%, rgba(13, 17, 23, 0.98) 100%);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.about-gis-spotlight:hover {
+  border-color: rgba(0, 255, 136, 0.6) !important;
+  box-shadow: 0 8px 32px rgba(0, 255, 136, 0.15), var(--glow-sm);
+  transform: translateY(-2px);
+}
+
+.about-gis-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid rgba(0, 212, 255, 0.15);
+  padding-bottom: 0.75rem;
+}
+
+.about-gis-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 2px;
+  color: var(--holo-cyan);
+}
+
+.about-gis-pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #00ff88;
+  box-shadow: 0 0 10px #00ff88;
+  animation: pulse-ring 2s infinite ease-in-out;
+}
+
+.about-gis-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 0.6rem;
+  letter-spacing: 0.5px;
+  font-family: var(--font-hud);
+}
+
+.about-gis-desc {
+  font-size: 0.95rem;
+  line-height: 1.75;
+  color: var(--text-dim);
+  margin-bottom: 1.25rem;
+}
+
+.about-gis-pillars {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin-bottom: 1.25rem;
+}
+
+.about-gis-pillar-card {
+  background: rgba(0, 212, 255, 0.03);
+  border: 1px solid rgba(0, 212, 255, 0.15);
+  border-radius: 6px;
+  padding: 0.85rem 1rem;
+  transition: all 0.25s ease;
+}
+
+.about-gis-pillar-card:hover {
+  background: rgba(0, 212, 255, 0.07);
+  border-color: rgba(0, 212, 255, 0.35);
+}
+
+.about-gis-pillar-num {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--holo-cyan);
+  margin-bottom: 4px;
+  letter-spacing: 1px;
+}
+
+.about-gis-pillar-text {
+  font-size: 0.85rem;
+  color: var(--text-bright);
+  line-height: 1.45;
+}
+
 /* ── SKILLS SECTION ───────────────────────────────────────── */
 #skills .skills-grid {
   display: grid;
@@ -2965,13 +3065,13 @@ footer {
     bottom: 0;
   }
   #vith-capsule #vith-mic {
-    bottom: 54px;
+    bottom: 68px;
   }
   #vith-capsule #vith-voice-toggle {
-    bottom: 122px;
+    bottom: 136px;
   }
   #vith-capsule #vith-history-btn {
-    bottom: 190px;
+    bottom: 204px;
   }
   #vith-capsule #vith-mic,
   #vith-capsule #vith-voice-toggle,
