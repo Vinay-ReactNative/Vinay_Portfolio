@@ -187,13 +187,13 @@ function initIntro() {
     if (done) return;
     let idx = 0;
 
-    // Calculate typing speed based on actual audio duration so text and voice finish together
-    const durationMs = (audio && audio.duration && !isNaN(audio.duration) && audio.duration > 2)
+    // Calculate typing speed based on actual audio duration or standard speech rate (~42ms/char)
+    const durationMs = (audio && audio.duration && !isNaN(audio.duration) && audio.duration > 15)
       ? (audio.duration * 1000)
-      : (introText.length * 38);
+      : (introText.length * 42);
 
-    // Bounded character delay (between 20ms and 55ms per character)
-    const charDelay = Math.max(20, Math.min(55, Math.floor(durationMs / introText.length)));
+    // Bounded character delay (between 25ms and 50ms per character, ~42ms standard)
+    const charDelay = Math.max(25, Math.min(50, Math.floor(durationMs / introText.length)));
 
     function typeNext() {
       if (done) return;
@@ -247,9 +247,8 @@ function initIntro() {
       startBtn.classList.add("loading");
     }
 
-    // Speak the intro out loud with synchronized typing
+    // Speak the intro out loud with pipelined streaming & synchronized typing
     VITHVoice.speak(introText, {
-      forceSingle: true, // Use the full intro track cached in backend
       onPlay: (audio) => {
         // Audio has begun playing!
         if (startBtn) {
@@ -1160,26 +1159,28 @@ function initVITHPanel() {
   }
 
   function setMicButtonState(mode) {
-    const isListening = mode === "listening";
-    const isStopping = mode === "speaking";
-    const isActive = isListening || isStopping;
+    const isSpeaking = VITHVoice.isSpeaking || mode === "speaking";
+    const isListening = !isSpeaking && mode === "listening";
+    const isActive = isListening || isSpeaking;
 
     micBtn.classList.toggle("mic-active", isListening);
-    micBtn.classList.toggle("stop-active", isStopping);
+    micBtn.classList.toggle("stop-active", isSpeaking);
     micIcon.classList.toggle("hidden", isActive);
     stopIcon.classList.toggle("hidden", !isActive);
     micBtn.title = isListening
       ? "Stop listening"
-      : isStopping
+      : isSpeaking
         ? "Stop VITH speaking (Esc)"
         : "Speak to Vith";
     micBtn.setAttribute("aria-label", isListening
       ? "Stop voice input"
-      : isStopping
+      : isSpeaking
         ? "Stop VITH speaking"
         : "Start voice input");
     micBtn.setAttribute("aria-pressed", String(isActive));
   }
+
+  setMicButtonState(VITHVoice.isListening ? "listening" : "idle");
 
   // ── Waveform animator ──────────────────────────────────────
   function startViz(active) {

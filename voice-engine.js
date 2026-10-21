@@ -285,18 +285,22 @@ const VITHVoice = {
     const processed = this._preprocessSpeech(text);
     if (!processed) return null;
 
-    if (this._preloadedAudios.has(processed)) {
-      return this._preloadedAudios.get(processed);
+    // For multi-sentence scripts (like intro), preload Chunk 0 so speech starts with 0ms delay!
+    const chunks = this._splitIntoSpeechChunks(processed);
+    const targetText = (chunks && chunks.length > 1) ? chunks[0] : processed;
+
+    if (this._preloadedAudios.has(targetText)) {
+      return this._preloadedAudios.get(targetText);
     }
 
     try {
-      console.log(`[VITH Voice: PRELOAD] Pre-fetching audio: "${processed.slice(0, 45)}..."`);
-      const blob = await this._fetchAudioBlob(processed);
+      console.log(`[VITH Voice: PRELOAD] Pre-fetching audio: "${targetText.slice(0, 45)}..."`);
+      const blob = await this._fetchAudioBlob(targetText);
       if (blob) {
         const url = URL.createObjectURL(blob);
         const item = { blob, url };
-        this._preloadedAudios.set(processed, item);
-        console.log(`[VITH Voice: PRELOAD READY] "${processed.slice(0, 45)}..." (${blob.size} bytes)`);
+        this._preloadedAudios.set(targetText, item);
+        console.log(`[VITH Voice: PRELOAD READY] "${targetText.slice(0, 45)}..." (${blob.size} bytes)`);
         return item;
       }
     } catch (e) {
@@ -424,9 +428,14 @@ const VITHVoice = {
     console.log(`%c[VITH Pipeline Streaming]%c ${chunks.length} chunks queued for Request #${requestId}`, "color: #00ff88; font-weight: bold", "color: inherit");
 
     try {
-      // 1. Start fetching Chunk 0 immediately!
-      const chunk0Promise = this._fetchAudioBlob(chunks[0]);
-      const blob0 = await chunk0Promise;
+      // 1. Check if Chunk 0 is already in preloaded cache (0ms instant start!)
+      let blob0 = null;
+      if (this._preloadedAudios.has(chunks[0])) {
+        console.log(`[VITH Pipeline Streaming] Preloaded cache HIT for Chunk 0: "${chunks[0].slice(0, 35)}..."`);
+        blob0 = this._preloadedAudios.get(chunks[0]).blob;
+      } else {
+        blob0 = await this._fetchAudioBlob(chunks[0]);
+      }
 
       if (requestId !== this.activeRequestId) return;
 
