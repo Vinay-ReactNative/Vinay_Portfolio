@@ -149,7 +149,7 @@ const VITH_KNOWLEDGE = {
     {
       institution: "Karavali Institute of Technology",
       location: "Mangalore, India",
-      degree: "Bachelor of Engineering — Aeronautical Engineering",
+      degree: "Bachelor of Engineering in Aeronautical Engineering",
       period: "2018 — 2022",
       grade: "7.6 CGPA"
     }
@@ -340,18 +340,7 @@ const VITH_KNOWLEDGE = {
       "All systems nominal. What would you like to know about Vinay?",
     ],
 
-    introScript: `Hello. I am Vith — Vinay Is The Hero.
-    A personal AI assistant created by Vinay,
-    inspired by Tony Stark's EDITH.
-    Vinay is a Senior React Native Developer based in Bangalore,
-    with 3+ years of experience building cross-platform mobile applications
-    for Android and iOS — from enterprise workforce management platforms
-    to consumer utility apps, payment integrations, and mobile security work.
-    Beyond his professional career, he is building VINXO —
-    his own personal AI companion — because some people don't just use technology,
-    they build it.
-    Feel free to ask me anything about Vinay.
-    I am here to tell you his story.`,
+    introScript: `Hello! I am VITH — Vinay's personal AI assistant. Vinay is a Senior React Native Developer from Bangalore, with 3+ years building production apps. He is also building VINXO — his own personal AI companion. You can type or speak to me. Ask me anything about his story.`,
 
     catchphrases: [
       "Vinay is the Hero. That is not just a name — that is a fact.",
@@ -370,10 +359,18 @@ const VITH_KNOWLEDGE = {
 //  Provides structured intent & section routing metadata
 // ============================================================
 const VITH_QA = {
-  // Normalize pronouns, contractions, and query formatting
+  // Normalize pronouns, contractions, voice recognition slips, and query formatting
   normalizeQuery(query) {
     if (!query) return "";
     let q = " " + query.toLowerCase().replace(/[?!.,;:]/g, " ") + " ";
+
+    // Speech-to-text typo and slip tolerance
+    q = q.replace(/\b(wualification|wualifications|qualifcation|qualifcations)\b/g, "qualification")
+      .replace(/\b(educastion|eduaction)\b/g, "education")
+      .replace(/\b(gradution|gradutated)\b/g, "graduation")
+      .replace(/\b(technolgy|technolgies)\b/g, "technologies")
+      .replace(/\b(expereince|experence)\b/g, "experience");
+
     // Replace contractions
     q = q.replace(/\bwhat's\b/g, "what is")
       .replace(/\bwho's\b/g, "who is")
@@ -741,7 +738,7 @@ const VITH_QA = {
     // ── CURRENT JOB (Esyasoft) ─────────────────────────────────
     {
       name: "CURRENT_JOB",
-      weight: 17,
+      weight: 18,
       section: "experience",
       targetItem: { type: "experience", index: 0, company: "esyasoft" },
       keywords: [
@@ -755,7 +752,14 @@ const VITH_QA = {
         "current role",
         "present job",
         "where does vinay work now",
-        "where is vinay working"
+        "where is vinay working",
+        "where does vinay work",
+        "where does he work",
+        "where does vinay work currently",
+        "where does he work currently",
+        "who is his employer",
+        "who is vinay employer",
+        "current employer"
       ],
       answer: () => `Vinay currently works as a Senior React Native Developer at Esyasoft Smart Research. He independently developed the Network Survey module for an enterprise workforce management platform, integrated Google and Apple Maps, and built features across consumer utility applications.`
     },
@@ -781,20 +785,35 @@ const VITH_QA = {
     // ── GENERAL EXPERIENCE OVERVIEW ────────────────────────────
     {
       name: "EXPERIENCE",
-      weight: 15,
+      weight: 18,
       section: "experience",
       keywords: [
         "tell me about vinay professional experience",
         "tell me about your professional experience",
+        "tell me his experience",
+        "tell me his work experience",
+        "what is his experience",
+        "what is your experience",
         "professional experience",
         "work experience",
+        "how many years of experience",
+        "how much experience",
+        "years of experience",
+        "total experience",
+        "yoe",
+        "how experienced is he",
+        "how experienced are you",
+        "how long has he been working",
+        "how long have you worked",
         "career history",
         "work history",
         "job history",
+        "career journey",
         "where did vinay work",
         "where have you worked",
         "companies",
         "employment",
+        "employment history",
         "where did he work",
         "experience"
       ],
@@ -944,35 +963,133 @@ const VITH_QA = {
       answer: () => `Vinay's notable achievements include publishing production applications on the Google Play Store and Apple App Store, independently architecting enterprise modules at Esyasoft, integrating three production payment gateways, and creating VINXO, his personal AI companion.`
     },
 
-    // ── EDUCATION (Mapped to About Section) ────────────────────
+    // ── RESUME & CV REQUESTS ───────────────────────────────────
     {
-      name: "ABOUT_VINAY",
-      weight: 18,
+      name: "RESUME",
+      weight: 20,
+      section: "about",
+      keywords: [
+        "resume",
+        "cv",
+        "curriculum vitae",
+        "download resume",
+        "view resume",
+        "see resume",
+        "get resume",
+        "share resume",
+        "resume pdf",
+        "cv pdf",
+        "can i see his resume",
+        "can i download his resume",
+        "where is his resume",
+        "send resume"
+      ],
+      answer: () => `You can explore Vinay's complete engineering dossier and verified projects across this interactive terminal. To request his official resume and PDF credentials, please email him directly at ${VITH_KNOWLEDGE.owner.email}.`
+    },
+
+    // ── NOTICE PERIOD & RECRUITMENT AVAILABILITY ────────────────
+    {
+      name: "AVAILABILITY",
+      weight: 20,
+      section: "contact",
+      keywords: [
+        "notice period",
+        "what is his notice period",
+        "what is your notice period",
+        "immediate joiner",
+        "immediate joining",
+        "can he join immediately",
+        "can vinay join immediately",
+        "can he join",
+        "can vinay join",
+        "join immediately",
+        "when can he join",
+        "joining date",
+        "joining time",
+        "availability",
+        "available immediately",
+        "is he available",
+        "is he open to work",
+        "is he looking for a job",
+        "open to opportunities",
+        "salary expectation",
+        "expected ctc",
+        "compensation",
+        "current ctc"
+      ],
+      answer: () => `Vinay is open to high-impact Senior React Native and Mobile Platform Engineering roles. For specific discussions regarding his notice period, joining timeline, or compensation, please reach out directly at ${VITH_KNOWLEDGE.owner.email}.`
+    },
+
+    // ── EDUCATION & ACADEMIC QUALIFICATIONS (Mapped to About) ───
+    {
+      name: "EDUCATION",
+      weight: 22,
       section: "about",
       targetItem: { type: "education", id: "about-education-card" },
       keywords: [
+        "qualification",
+        "qualifications",
+        "educational qualification",
+        "educational qualifications",
+        "academic qualification",
+        "academic qualifications",
+        "what is his qualification",
+        "what are his qualifications",
+        "what is your qualification",
+        "what are your qualifications",
+        "highest qualification",
         "education",
+        "educational background",
+        "academic background",
+        "academics",
+        "studies",
+        "study background",
         "what did vinay study",
         "what did you study",
         "where did vinay study",
         "where did you study",
+        "tell me about his studies",
+        "tell me his studies",
         "what is his degree",
         "what is your degree",
+        "which degree",
         "degree",
         "bachelor",
         "bachelors",
         "btech",
         "be",
+        "b e",
+        "bachelor of engineering",
         "college",
+        "which college",
+        "which college did he attend",
+        "which university",
         "university",
+        "institution",
+        "karavali",
+        "karavali institute",
+        "karavali institute of technology",
+        "mangalore",
         "studied",
         "study",
-        "academics",
-        "academic background",
+        "graduated",
+        "graduation",
+        "where did he graduate",
+        "where did you graduate",
+        "graduate",
+        "which stream",
+        "which branch",
+        "major",
+        "schooling",
         "aeronautical engineering",
         "aeronautical",
+        "aeronautics",
         "cgpa",
-        "graduation"
+        "grade",
+        "grades",
+        "marks",
+        "percentage",
+        "engineering background"
       ],
       answer: () => {
         const edu = VITH_KNOWLEDGE.education[0];
@@ -982,19 +1099,60 @@ const VITH_QA = {
 
     // ── HOBBIES & INTERESTS (Mapped to About) ──────────────────
     {
-      name: "ABOUT_VINAY",
-      weight: 14,
+      name: "HOBBIES",
+      weight: 16,
       section: "about",
       targetItem: { type: "hobbies", id: "hobbies-container" },
-      keywords: ["hobbies", "hobby", "interests", "interest", "free time", "outside work", "music", "video editing", "cinema"],
+      keywords: [
+        "hobbies",
+        "hobby",
+        "interests",
+        "interest",
+        "what are his hobbies",
+        "what are your hobbies",
+        "what does he do in free time",
+        "free time",
+        "outside work",
+        "outside coding",
+        "passions",
+        "music",
+        "video editing",
+        "filmmaking",
+        "cinema",
+        "art"
+      ],
       answer: () => `Outside of mobile engineering, Vinay creates original music, edits videos, designs digital art, and has a deep passion for cinema and filmmaking.`
     },
+
+    // ── LOCATION & RELOCATION (Mapped to About) ────────────────
     {
-      name: "ABOUT_VINAY",
-      weight: 14,
+      name: "LOCATION",
+      weight: 18,
       section: "about",
-      keywords: ["location", "where is vinay from", "where does vinay live", "where is he based", "bangalore"],
-      answer: () => `Vinay is based in ${VITH_KNOWLEDGE.owner.location}.`
+      keywords: [
+        "location",
+        "current location",
+        "vinay location",
+        "located",
+        "where is vinay located",
+        "where is he located",
+        "where is located",
+        "where is vinay from",
+        "where does vinay live",
+        "where is he based",
+        "where is vinay based",
+        "where does he stay",
+        "which city",
+        "bangalore",
+        "is he in bangalore",
+        "willing to relocate",
+        "relocation",
+        "remote work",
+        "work remotely",
+        "can he relocate",
+        "remote"
+      ],
+      answer: () => `Vinay is based in ${VITH_KNOWLEDGE.owner.location}. He is open to on-site engineering roles in Bangalore as well as collaborating with distributed teams globally.`
     }
   ],
 
@@ -1051,13 +1209,19 @@ const VITH_QA = {
       if (pattern.fallbackWhenOtherIntent && hasSpecificIntent) continue;
 
       let score = 0;
+      let matchedCount = 0;
       for (const kw of pattern.keywords) {
         if (paddedQ.includes(" " + kw + " ")) {
-          const matchScore = (pattern.weight || 10) * 100 + kw.length * 10;
+          matchedCount++;
+          // Multi-word phrase matches and longer keywords score significantly higher to prevent generic collisions
+          const matchScore = (pattern.weight || 10) * 100 + (kw.length * 15) + (kw.split(" ").length * 60);
           if (matchScore > score) {
             score = matchScore;
           }
         }
+      }
+      if (matchedCount > 1) {
+        score += (matchedCount - 1) * 75; // Multi-keyword resonance bonus
       }
       if (score > highestScore) {
         highestScore = score;

@@ -183,34 +183,33 @@ function initIntro() {
   }
 
   // Type the intro message in sync with Sarah's actual speech
-  function startSyncedTyping(audio) {
+  function startSyncedTyping() {
     if (done) return;
     let idx = 0;
 
-    // Calculate typing speed based on actual audio duration or standard speech rate (~42ms/char)
-    const durationMs = (audio && audio.duration && !isNaN(audio.duration) && audio.duration > 15)
-      ? (audio.duration * 1000)
-      : (introText.length * 42);
-
-    // Bounded character delay (between 25ms and 50ms per character, ~42ms standard)
-    const charDelay = Math.max(25, Math.min(50, Math.floor(durationMs / introText.length)));
+    // Measured sync rate (~62ms per character) so typing completes in exact sync with Sarah's speech
+    const charDelay = 62;
 
     function typeNext() {
       if (done) return;
       if (idx <= introText.length) {
-        msgEl.textContent = introText.slice(0, idx);
+        msgEl.innerHTML = introText.slice(0, idx) + '<span class="intro-typing-cursor"></span>';
         idx++;
         const pct = (idx / introText.length) * 100;
         if (progressBar) progressBar.style.width = pct + "%";
         setTimeout(typeNext, charDelay);
       } else {
+        msgEl.innerHTML = introText + '<span class="intro-typing-cursor"></span>';
+
         // Done typing — wait for voice to complete before auto-closing
+        let waitChecks = 0;
         const pollVoiceEnd = () => {
           if (done) return;
-          if (!VITHVoice.isSpeaking) {
+          waitChecks++;
+          if (!VITHVoice.isSpeaking && waitChecks >= 4) {
             setTimeout(closeIntro, 1200);
           } else {
-            setTimeout(pollVoiceEnd, 300);
+            setTimeout(pollVoiceEnd, 350);
           }
         };
         pollVoiceEnd();
@@ -222,6 +221,18 @@ function initIntro() {
   function startIntro() {
     if (introStarted || done) return;
     introStarted = true;
+
+    // Immediately fade out the start button
+    if (startBtn) {
+      startBtn.classList.add("fade-out");
+      setTimeout(() => {
+        if (startBtn) startBtn.style.display = "none";
+      }, 300);
+    }
+
+    // Start visualizer and typing animation IMMEDIATELY on click so text is NEVER missing!
+    startIntroViz();
+    startSyncedTyping();
 
     // Guaranteed user interaction: unlock Web Audio and SpeechSynthesis
     try {
@@ -238,43 +249,8 @@ function initIntro() {
       } catch (e) {}
     }
 
-    if (startBtn) {
-      startBtn.innerHTML = `
-        <span class="btn-glow-pulse"></span>
-        <span class="start-btn-icon">⚡</span>
-        <span class="start-btn-text">SYNCHRONIZING VITH AUDIO...</span>
-      `;
-      startBtn.classList.add("loading");
-    }
-
-    // Speak the intro out loud with pipelined streaming & synchronized typing
-    VITHVoice.speak(introText, {
-      onPlay: (audio) => {
-        // Audio has begun playing!
-        if (startBtn) {
-          startBtn.classList.add("fade-out");
-          setTimeout(() => {
-            if (startBtn) startBtn.style.display = "none";
-          }, 350);
-        }
-        startIntroViz();
-        startSyncedTyping(audio);
-      }
-    });
-
-    // Safety fallback: if audio fails or is delayed past 4.5s, start typing anyway
-    setTimeout(() => {
-      if (!done && msgEl.textContent.length === 0) {
-        if (startBtn) {
-          startBtn.classList.add("fade-out");
-          setTimeout(() => {
-            if (startBtn) startBtn.style.display = "none";
-          }, 350);
-        }
-        startIntroViz();
-        startSyncedTyping(null);
-      }
-    }, 4500);
+    // Speak the intro out loud with pipelined streaming & natural expressions
+    VITHVoice.speak(introText);
   }
 
   // Click on start button, or click anywhere on the overlay, or press any key

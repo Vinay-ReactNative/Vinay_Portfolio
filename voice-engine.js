@@ -18,7 +18,8 @@ const VITHVoice = {
       model: "s2.1-pro-free",                        // Free API tier model
       format: "mp3",
       endpoint: "https://api.fish.audio/v1/tts",
-      proxyEndpoint: "/api/tts"
+      proxyEndpoint: "/api/tts",
+      cloudProxyEndpoint: "https://vinay-react-native-ai.netlify.app/api/tts"
     },
     tts: {
       useFallback: false,
@@ -412,7 +413,7 @@ const VITHVoice = {
     }
 
     const fetchPromise = (async () => {
-      const { apiKey, voiceId, model, format, endpoint, proxyEndpoint } = this.config.fishAudio;
+      const { apiKey, voiceId, model, format, endpoint, proxyEndpoint, cloudProxyEndpoint } = this.config.fishAudio;
       const payload = {
         text,
         reference_id: voiceId,
@@ -422,7 +423,7 @@ const VITHVoice = {
 
       let response = null;
 
-      // 1. Local proxy server (supports persistent disk caching)
+      // 1. Same-origin proxy server (Netlify production or local Node server)
       try {
         const proxyRes = await fetch(proxyEndpoint, {
           method: "POST",
@@ -437,18 +438,39 @@ const VITHVoice = {
         if (abortSignal && abortSignal.aborted) throw proxyErr;
       }
 
-      // 2. Direct API request fallback
+      // 2. Netlify Cloud Proxy fallback (supports CORS for localhost:5500 Live Server testing!)
+      if (!response && cloudProxyEndpoint && window.location.hostname !== "vinay-react-native-ai.netlify.app") {
+        try {
+          const cloudRes = await fetch(cloudProxyEndpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+            signal: abortSignal
+          });
+          if (cloudRes.ok) {
+            response = cloudRes;
+          }
+        } catch (cloudErr) {
+          if (abortSignal && abortSignal.aborted) throw cloudErr;
+        }
+      }
+
+      // 3. Direct API request fallback
       if (!response) {
-        response = await fetch(endpoint, {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${apiKey}`,
-            "Content-Type": "application/json",
-            "model": model || "s2.1-pro-free"
-          },
-          body: JSON.stringify(payload),
-          signal: abortSignal
-        });
+        try {
+          response = await fetch(endpoint, {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${apiKey}`,
+              "Content-Type": "application/json",
+              "model": model || "s2.1-pro-free"
+            },
+            body: JSON.stringify(payload),
+            signal: abortSignal
+          });
+        } catch (directErr) {
+          if (abortSignal && abortSignal.aborted) throw directErr;
+        }
       }
 
       if (!response.ok) {
@@ -527,7 +549,7 @@ const VITHVoice = {
       console.warn("[VITH Fish Audio] Switching to Web Speech fallback:", err.message);
       if (requestId !== this.activeRequestId) return;
       this._cleanupAudio();
-      this._speakWebSpeech(text, requestId);
+      this._speakWebSpeech(text, requestId, options);
     }
   },
 
@@ -619,7 +641,7 @@ const VITHVoice = {
       console.warn("[VITH Pipeline Streaming Error] Falling back to Web Speech:", err.message);
       if (requestId !== this.activeRequestId) return;
       this._cleanupAudio();
-      this._speakWebSpeech(chunks.join(" "), requestId);
+      this._speakWebSpeech(chunks.join(" "), requestId, options);
     }
   },
 
@@ -682,7 +704,7 @@ const VITHVoice = {
     return preferred || voices.find(v => v.lang.startsWith("en")) || voices[0];
   },
 
-  _speakWebSpeech(text, requestId) {
+  _speakWebSpeech(text, requestId, options = {}) {
     if (!window.speechSynthesis) {
       this.isSpeaking = false;
       this._setStatus("ready", "Voice ready");
@@ -692,8 +714,17 @@ const VITHVoice = {
 
     this._setStatus("fallback", "Speaking via browser voice engine");
 
-    const cleanText = text.replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
+    // Strip Fish Audio bracket emotion tags (e.g. [warmly], [pause]) before Web Speech speaks
+    const cleanText = text
+      .replace(/\[.*?\]\s*/g, "")
+      .replace(/[\r\n]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
     if (!cleanText) return;
+
+    if (options && options.onPlay) {
+      try { options.onPlay(null); } catch (e) {}
+    }
 
     const bestVoice = this._getBestVoice();
     if (bestVoice) this.config.tts.voice = bestVoice;
